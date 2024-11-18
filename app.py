@@ -907,7 +907,7 @@ class ProductSelector:
                     if choice != "None of the above":
                         #st.session_state.selected_product = choice
                         st.session_state.messages.append({"role": "assistant", "content": f"You selected {choice}"})
-                        _, msg = chatbot_response("", choice.split(" by ")[0], "", extract_info=True)
+                        _, msg = chatbot_response("", choice.split(" by ")[0], extract_info=True)
                         #Check if analysis couldn't be done because db had incomplete information
                         if msg != "product not found because product information in the db is corrupt":
                             #Only when msg is acceptable
