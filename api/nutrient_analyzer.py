@@ -218,10 +218,6 @@ Nutrition Analysis :
 @app.get("/api/nutrient-analysis")
 async def nutrient_analysis(product_info_from_db):
     if product_info_from_db:
-      brand_name = product_info_from_db.get("brandName", "")
-      product_name = product_info_from_db.get("productName", "")
-      ingredients_list = [ingredient["name"] for ingredient in product_info_from_db.get("ingredients", [])]
-      claims_list = product_info_from_db.get("claims", [])
       nutritional_information = product_info_from_db['nutritionalInformation']
       serving_size = product_info_from_db["servingSize"]["quantity"]
     
