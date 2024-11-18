@@ -421,6 +421,7 @@ async def analyze_nutrition_icmr_rda(product_info_from_db):
                 json=product_info_from_db
             )
             response.raise_for_status()
+            print(f"response.text : {response.text}")
             return response.text
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
