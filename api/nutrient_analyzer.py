@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any
 from openai import OpenAI
-from .models import ProductInfo  # Import the models
+from typing import Dict, Any
 
 app = FastAPI(title="Nutrition Analysis API")
 
@@ -217,7 +217,7 @@ Nutrition Analysis :
     return completion.choices[0].message.content
 
 @app.post("/api/nutrient-analysis")
-async def get_nutrient_analysis(product_info: ProductInfo):  # Use the Pydantic model
+async def get_nutrient_analysis(product_info: Dict[str, Any]):
     try:
         nutritional_information = product_info.nutritionalInformation
         serving_size = product_info.servingSize.quantity
