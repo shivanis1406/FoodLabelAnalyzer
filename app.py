@@ -863,7 +863,7 @@ async def chatbot_response(image_urls_str, product_name_by_user, extract_info = 
             
         elif extract_info == True:
             with st.spinner("Analyzing the product... This may take a moment."):
-                product_info_raw = get_product(product_name_by_user)
+                product_info_raw = await get_product(product_name_by_user)
                 print(f"DEBUG product_info_raw from name: {type(product_info_raw)} {product_info_raw}")
                 if not product_info_raw:
                     return [], "product not found because product information in the db is corrupt"
