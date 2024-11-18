@@ -37,7 +37,7 @@ async def extract_data_from_product_image(image_links):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
-                "https://foodlabelanalyzer-1.onrender.com/api/extract-data", 
+                "https://foodlabelanalyzer-1.onrender.com/data_extractor/api/extract-data", 
                 json=image_links
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
@@ -54,7 +54,7 @@ async def get_product_list(product_name_by_user):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
-                "https://foodlabelanalyzer-1.onrender.com/api/find-product", 
+                "https://foodlabelanalyzer-1.onrender.com/data_extractor/api/find-product", 
                 params={"product_name": product_name_by_user}
             )
             response.raise_for_status()
@@ -67,7 +67,7 @@ async def get_product(product_name):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
-                "https://foodlabelanalyzer-1.onrender.com/api/get-product", 
+                "https://foodlabelanalyzer-1.onrender.com/data_extractor/api/get-product", 
                 params={"product_name": product_name}
             )
             response.raise_for_status()
@@ -414,7 +414,7 @@ async def analyze_nutrition_icmr_rda(product_info_from_db):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
-                "https://foodlabelanalyzer-1.onrender.com/api/nutrient-analysis", 
+                "https://foodlabelanalyzer-1.onrender.com/nutrient_analyzer/api/nutrient-analysis", 
                 json=product_info_from_db
             )
             response.raise_for_status()
