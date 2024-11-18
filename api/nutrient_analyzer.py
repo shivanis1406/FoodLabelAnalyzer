@@ -14,13 +14,13 @@ debug_mode = True
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
                 
 # Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+#app.add_middleware(
+#    CORSMiddleware,
+#    allow_origins=["*"],
+#    allow_credentials=True,
+#    allow_methods=["*"],
+#    allow_headers=["*"],
+#)
 
 def find_product_nutrients(product_info_from_db):
     #GET Response: {'_id': '6714f0487a0e96d7aae2e839',
