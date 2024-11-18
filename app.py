@@ -58,7 +58,6 @@ async def get_product_list(product_name_by_user):
                 params={"product_name": product_name_by_user}
             )
             response.raise_for_status()
-            print("Calling find-product api", response.json())
             return response.json()
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
