@@ -413,9 +413,9 @@ def get_assistant_for_ingredient(ingredient, N=2):
 async def analyze_nutrition_icmr_rda(product_info_from_db):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(
+            response = await client.post(
                 "https://foodlabelanalyzer-1.onrender.com/api/nutrient-analysis", 
-                params={"product_info_from_db": product_info_from_db}
+                json=product_info_from_db
             )
             response.raise_for_status()
             return response.text
