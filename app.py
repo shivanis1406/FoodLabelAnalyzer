@@ -46,7 +46,7 @@ async def extract_data_from_product_image(image_links):
             print(f"An error occurred: {e}")
             return None
             
-def get_product_list(product_name_by_user, data_extractor_url):
+def get_product_list(product_name_by_user):
     response = find_product(product_name_by_user)
     return response
 
@@ -804,14 +804,14 @@ def analyze_product(product_info_raw):
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 
-def chatbot_response(image_urls_str, product_name_by_user, data_extractor_url, extract_info = True):
+def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
     # Process the user input and generate a response
     processing_level = ""
     harmful_ingredient_analysis = ""
     claims_analysis = ""
     image_urls = []
     if product_name_by_user != "":
-        similar_product_list_json = get_product_list(product_name_by_user, data_extractor_url)
+        similar_product_list_json = get_product_list(product_name_by_user)
         
         if similar_product_list_json and extract_info == False:
             with st.spinner("Fetching product information from our database... This may take a moment."):
@@ -956,7 +956,7 @@ class ChatManager:
         st.session_state.product_shared = True
         st.session_state.current_user_input = user_input
         similar_products, _ = chatbot_response(
-            "", user_input, data_extractor_url, extract_info=False
+            "", user_input, extract_info=False
         )
         
         
@@ -977,7 +977,7 @@ class ChatManager:
         
         if is_valid_url and st.session_state.product_shared:
             _, msg = chatbot_response(
-                user_input, "", data_extractor_url, extract_info=True
+                user_input, "", extract_info=True
             )
             st.session_state.product_selected = True
             if msg != "product not found because image is not clear" and "Product information could not be extracted from the image" not in msg:
