@@ -51,6 +51,7 @@ async def extract_data_from_product_image(image_links):
 #    return response
 
 async def get_product_list(product_name_by_user):
+    print("Calling find-product api")
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
@@ -58,6 +59,7 @@ async def get_product_list(product_name_by_user):
                 params={"product_name": product_name_by_user}
             )
             response.raise_for_status()
+            print("Calling find-product api", response)
             return response
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
