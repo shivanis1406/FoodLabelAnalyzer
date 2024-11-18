@@ -1030,7 +1030,7 @@ async def main():
     # Handle product selection if awaiting
     selection_in_progress = False
     if st.session_state.awaiting_selection:
-        selection_in_progress = ProductSelector.handle_selection()
+        selection_in_progress = await ProductSelector.handle_selection()
     
     # Only show chat input if not awaiting selection
     if not selection_in_progress:
