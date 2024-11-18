@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any
 from openai import OpenAI
+from .models import ProductInfo  # Import the models
 
 app = FastAPI(title="Nutrition Analysis API")
 
@@ -216,32 +217,35 @@ Nutrition Analysis :
     return completion.choices[0].message.content
 
 @app.post("/api/nutrient-analysis")
-async def get_nutrient_analysis(product_info_from_db):
-    if product_info_from_db:
-      nutritional_information = product_info_from_db['nutritionalInformation']
-      serving_size = product_info_from_db["servingSize"]["quantity"]
-    
-      nutrient_analysis_rda = ""
-      nutrient_analysis = ""
-      nutritional_level = ""
+async def get_nutrient_analysis(product_info: ProductInfo):  # Use the Pydantic model
+    try:
+        nutritional_information = product_info.nutritionalInformation
+        serving_size = product_info.servingSize.quantity
+        
+        nutrient_analysis_rda = ""
+        nutrient_analysis = ""
+        nutritional_level = ""
+                
+        if nutritional_information:
+            product_type, calories, sugar, salt, serving_size = find_product_nutrients(product_info.dict())
+            if product_type is not None and serving_size is not None and serving_size > 0:                                                          
+                nutrient_analysis = await analyze_nutrients(product_type, calories, sugar, salt, serving_size)                       
+            else:                                                                                                              
+                raise HTTPException(status_code=400, detail="Product information in the db is corrupt")
+            print(f"DEBUG ! nutrient analysis is {nutrient_analysis}")
+        
+            nutrient_analysis_rda_data = await rda_analysis(nutritional_information, serving_size)
+            print(f"DEBUG ! Data for RDA nutrient analysis is of type {type(nutrient_analysis_rda_data)} - {nutrient_analysis_rda_data}")
+            print(f"DEBUG : nutrient_analysis_rda_data['nutritionPerServing'] : {nutrient_analysis_rda_data['nutritionPerServing']}")
+            print(f"DEBUG : nutrient_analysis_rda_data['userServingSize'] : {nutrient_analysis_rda_data['userServingSize']}")
+                    
+            nutrient_analysis_rda = await find_nutrition(nutrient_analysis_rda_data)
+            print(f"DEBUG ! RDA nutrient analysis is {nutrient_analysis_rda}")
+                    
+            nutritional_level = await analyze_nutrition_icmr_rda(nutrient_analysis, nutrient_analysis_rda)
+            return nutritional_level
+        else:
+            raise HTTPException(status_code=400, detail="Nutritional information is required")
             
-      if nutritional_information:
-          product_type, calories, sugar, salt, serving_size = find_product_nutrients(product_info_from_db)
-          if product_type is not None and serving_size is not None and serving_size > 0:                                                          
-              nutrient_analysis = await analyze_nutrients(product_type, calories, sugar, salt, serving_size)                       
-          else:                                                                                                              
-              return "product not found because product information in the db is corrupt"   
-          print(f"DEBUG ! nutrient analysis is {nutrient_analysis}")
-    
-          nutrient_analysis_rda_data = await rda_analysis(nutritional_information, serving_size)
-          print(f"DEBUG ! Data for RDA nutrient analysis is of type {type(nutrient_analysis_rda_data)} - {nutrient_analysis_rda_data}")
-          print(f"DEBUG : nutrient_analysis_rda_data['nutritionPerServing'] : {nutrient_analysis_rda_data['nutritionPerServing']}")
-          print(f"DEBUG : nutrient_analysis_rda_data['userServingSize'] : {nutrient_analysis_rda_data['userServingSize']}")
-                
-          nutrient_analysis_rda = await find_nutrition(nutrient_analysis_rda_data)
-          print(f"DEBUG ! RDA nutrient analysis is {nutrient_analysis_rda}")
-                
-          #Call GPT for nutrient analysis
-          nutritional_level = await analyze_nutrition_icmr_rda(nutrient_analysis, nutrient_analysis_rda)
-
-          return nutritional_level
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
