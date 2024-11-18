@@ -2,8 +2,8 @@ import streamlit as st
 from openai import OpenAI
 import json, os, httpx, asyncio
 import requests, time
-from data_extractor import extract_data, get_product
-from nutrient_analyzer import analyze_nutrients
+from data_extractor import extract_data
+#from nutrient_analyzer import analyze_nutrients
 from rda import find_nutrition
 from typing import Dict, Any
 from calc_cosine_similarity import find_cosine_similarity, find_embedding , find_relevant_file_paths
@@ -62,8 +62,21 @@ async def get_product_list(product_name_by_user):
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
             return None
+
+async def get_product(product_name):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://foodlabelanalyzer-1.onrender.com/api/get-product", 
+                params={"product_name": product_name}
+            )
+            response.raise_for_status()
+            return response.json()
+        except httpx.RequestError as e:
+            print(f"An error occurred: {e}")
+            return None
             
-def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, Any], 
+def rda_analysis_old(product_info_from_db_nutritionalInformation: Dict[str, Any], 
                 product_info_from_db_servingSize: float) -> Dict[str, Any]:
     """
     Analyze nutritional information and return RDA analysis data in a structured format.
@@ -148,7 +161,7 @@ def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, Any],
         raise
 
 
-def find_product_nutrients(product_info_from_db):
+def find_product_nutrients_old(product_info_from_db):
     #GET Response: {'_id': '6714f0487a0e96d7aae2e839',
     #'brandName': 'Parle', 'claims': ['This product does not contain gold'],
     #'fssaiLicenseNumbers': [10013022002253],
@@ -397,7 +410,20 @@ def get_assistant_for_ingredient(ingredient, N=2):
         
     return assistant2, refs
 
-def analyze_nutrition_icmr_rda(nutrient_analysis, nutrient_analysis_rda):
+async def analyze_nutrition_icmr_rda(product_info_from_db):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://foodlabelanalyzer-1.onrender.com/api/nutrient-analysis", 
+                params={"product_info_from_db": product_info_from_db}
+            )
+            response.raise_for_status()
+            return response.text
+        except httpx.RequestError as e:
+            print(f"An error occurred: {e}")
+            return None
+            
+def analyze_nutrition_icmr_rda_old(nutrient_analysis, nutrient_analysis_rda):
     global debug_mode, client
     system_prompt = """
 Task: Analyze the nutritional content of the food item and compare it to the Recommended Daily Allowance (RDA) or threshold limits defined by ICMR. Provide practical, contextual insights based on the following nutrients:
@@ -753,12 +779,11 @@ Claims Analysis for the product is as follows ->
         return f"Brand: {brand_name}\n\nProduct: {product_name}\n\nAnalysis:\n\n{completion.choices[0].message.content}"
 
 
-def analyze_product(product_info_raw):
+def analyze_product(product_info_from_db):
     
     global assistant1, assistant3
     
-    if product_info_raw:
-        product_info_from_db = product_info_raw
+    if product_info_from_db:
         brand_name = product_info_from_db.get("brandName", "")
         product_name = product_info_from_db.get("productName", "")
         ingredients_list = [ingredient["name"] for ingredient in product_info_from_db.get("ingredients", [])]
@@ -773,25 +798,27 @@ def analyze_product(product_info_raw):
         all_ingredient_analysis = ""
         claims_analysis = ""
         refs = []
-        
-        if nutritional_information:
-            product_type, calories, sugar, salt, serving_size = find_product_nutrients(product_info_from_db)
-            if product_type is not None and serving_size is not None and serving_size > 0:                                                          
-                nutrient_analysis = analyze_nutrients(product_type, calories, sugar, salt, serving_size)                       
-            else:                                                                                                              
-                return "product not found because product information in the db is corrupt"   
-            print(f"DEBUG ! nutrient analysis is {nutrient_analysis}")
 
-            nutrient_analysis_rda_data = rda_analysis(nutritional_information, serving_size)
-            print(f"DEBUG ! Data for RDA nutrient analysis is of type {type(nutrient_analysis_rda_data)} - {nutrient_analysis_rda_data}")
-            print(f"DEBUG : nutrient_analysis_rda_data['nutritionPerServing'] : {nutrient_analysis_rda_data['nutritionPerServing']}")
-            print(f"DEBUG : nutrient_analysis_rda_data['userServingSize'] : {nutrient_analysis_rda_data['userServingSize']}")
+        nutritional_level = await analyze_nutrition_icmr_rda(product_info_from_db)
+
+        #if nutritional_information:
+            #product_type, calories, sugar, salt, serving_size = find_product_nutrients(product_info_from_db)
+            #if product_type is not None and serving_size is not None and serving_size > 0:                                                          
+            #    nutrient_analysis = analyze_nutrients(product_type, calories, sugar, salt, serving_size)                       
+            #else:                                                                                                              
+            #    return "product not found because product information in the db is corrupt"   
+            #print(f"DEBUG ! nutrient analysis is {nutrient_analysis}")
+
+            #nutrient_analysis_rda_data = rda_analysis(nutritional_information, serving_size)
+            #print(f"DEBUG ! Data for RDA nutrient analysis is of type {type(nutrient_analysis_rda_data)} - {nutrient_analysis_rda_data}")
+            #print(f"DEBUG : nutrient_analysis_rda_data['nutritionPerServing'] : {nutrient_analysis_rda_data['nutritionPerServing']}")
+            #print(f"DEBUG : nutrient_analysis_rda_data['userServingSize'] : {nutrient_analysis_rda_data['userServingSize']}")
             
-            nutrient_analysis_rda = find_nutrition(nutrient_analysis_rda_data)
-            print(f"DEBUG ! RDA nutrient analysis is {nutrient_analysis_rda}")
+            #nutrient_analysis_rda = find_nutrition(nutrient_analysis_rda_data)
+            #print(f"DEBUG ! RDA nutrient analysis is {nutrient_analysis_rda}")
             
             #Call GPT for nutrient analysis
-            nutritional_level = analyze_nutrition_icmr_rda(nutrient_analysis, nutrient_analysis_rda)
+            #nutritional_level = analyze_nutrition_icmr_rda(nutrient_analysis, nutrient_analysis_rda)
         
         if len(ingredients_list) > 0:
             processing_level = analyze_processing_level(ingredients_list, assistant1.id) if ingredients_list else ""
