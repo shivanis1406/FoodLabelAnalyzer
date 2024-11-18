@@ -17,8 +17,8 @@ main_app.add_middleware(
 )
 
 # Mount apps
-main_app.mount("/", data_extractor_app)
-main_app.mount("/", nutrient_analyzer_app)
+main_app.mount("/data_extractor", data_extractor_app)
+main_app.mount("/nutrient_analyzer", nutrient_analyzer_app)
 
 # Optional: Add a root endpoint
 @main_app.get("/")
