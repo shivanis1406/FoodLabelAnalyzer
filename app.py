@@ -954,12 +954,12 @@ class ProductSelector:
 class ChatManager:
     """Manages chat interactions and responses"""
     @staticmethod
-    def process_response(user_input):
+    async def process_response(user_input):
         if not st.session_state.product_selected:
             if "http:/" not in user_input and "https:/" not in user_input:
-                response, status = ChatManager._handle_product_name(user_input)
+                response, status = await ChatManager._handle_product_name(user_input)
             else:
-                response, status = ChatManager._handle_product_url(user_input)
+                response, status = await ChatManager._handle_product_url(user_input)
                 
         return response, status
 
@@ -1006,7 +1006,7 @@ class ChatManager:
                 
         return "Please provide valid image URL of the product.", "no success"
 
-def main():
+async def main():
     # Initialize session state
     SessionState.initialize()
     
@@ -1041,7 +1041,7 @@ def main():
                 st.markdown(user_input)
             
             # Process response
-            response, status = ChatManager.process_response(user_input)
+            response, status = await ChatManager.process_response(user_input)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
