@@ -216,7 +216,7 @@ Nutrition Analysis :
     return completion.choices[0].message.content
 
 @app.post("/api/nutrient-analysis")
-async def nutrient_analysis(product_info_from_db):
+async def get_nutrient_analysis(product_info_from_db):
     if product_info_from_db:
       nutritional_information = product_info_from_db['nutritionalInformation']
       serving_size = product_info_from_db["servingSize"]["quantity"]
