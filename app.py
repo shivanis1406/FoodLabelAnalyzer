@@ -1069,5 +1069,10 @@ async def main():
         st.session_state.clear()
         st.rerun()
 
+# Create a wrapper function to run the async main
+def run_main():
+    asyncio.run(main())
+
+# Call the wrapper function in Streamlit
 if __name__ == "__main__":
-    main()
+    run_main()
