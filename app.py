@@ -51,6 +51,7 @@ async def extract_data_from_product_image(image_links):
 #    return response
 
 async def get_product_list(product_name_by_user):
+    print("calling find-product api")
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
@@ -64,6 +65,7 @@ async def get_product_list(product_name_by_user):
             return None
 
 async def get_product(product_name):
+    print("calling get-product api")
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
