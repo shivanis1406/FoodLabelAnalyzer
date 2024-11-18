@@ -46,11 +46,23 @@ async def extract_data_from_product_image(image_links):
             print(f"An error occurred: {e}")
             return None
             
-def get_product_list(product_name_by_user):
-    response = find_product(product_name_by_user)
-    return response
+#def get_product_list(product_name_by_user):
+#    response = find_product(product_name_by_user)
+#    return response
 
-
+async def get_product_list(product_name_by_user):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://foodlabelanalyzer-1.onrender.com/api/find-product", 
+                params={"product_name": product_name_by_user}
+            )
+            response.raise_for_status()
+            return response
+        except httpx.RequestError as e:
+            print(f"An error occurred: {e}")
+            return None
+            
 def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, Any], 
                 product_info_from_db_servingSize: float) -> Dict[str, Any]:
     """
@@ -804,14 +816,14 @@ def analyze_product(product_info_raw):
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 
-def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
+async def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
     # Process the user input and generate a response
     processing_level = ""
     harmful_ingredient_analysis = ""
     claims_analysis = ""
     image_urls = []
     if product_name_by_user != "":
-        similar_product_list_json = get_product_list(product_name_by_user)
+        similar_product_list_json = await get_product_list(product_name_by_user)
         
         if similar_product_list_json and extract_info == False:
             with st.spinner("Fetching product information from our database... This may take a moment."):
@@ -847,7 +859,7 @@ def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
                     image_urls.append(url)
 
         with st.spinner("Analyzing the product... This may take a moment."):
-            product_info_raw = extract_data_from_product_image(image_urls)
+            product_info_raw = await extract_data_from_product_image(image_urls)
             print(f"DEBUG product_info_raw from image : {product_info_raw}")
             if 'error' not in json.loads(product_info_raw).keys():
                 final_analysis = analyze_product(json.loads(product_info_raw))
