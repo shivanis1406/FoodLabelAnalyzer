@@ -779,7 +779,7 @@ Claims Analysis for the product is as follows ->
         return f"Brand: {brand_name}\n\nProduct: {product_name}\n\nAnalysis:\n\n{completion.choices[0].message.content}"
 
 
-def analyze_product(product_info_from_db):
+async def analyze_product(product_info_from_db):
     
     global assistant1, assistant3
     
@@ -868,7 +868,7 @@ async def chatbot_response(image_urls_str, product_name_by_user, extract_info = 
                 if not product_info_raw:
                     return [], "product not found because product information in the db is corrupt"
                 if 'error' not in product_info_raw.keys():
-                    final_analysis = analyze_product(product_info_raw)
+                    final_analysis = await analyze_product(product_info_raw)
                     return [], final_analysis
                 else:
                     return [], f"Product information could not be extracted from our database because of {product_info_raw['error']}"
