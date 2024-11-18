@@ -51,6 +51,9 @@ def find_product_nutrients(product_info_from_db):
     salt = None
     serving_size = None
 
+    if not product_info_from_db.get("nutritionalInformation"):
+        raise ValueError("Nutritional information is missing!")
+        
     if product_info_from_db["servingSize"]["unit"].lower() == "g":
         product_type = "solid"
     elif product_info_from_db["servingSize"]["unit"].lower() == "ml":
@@ -228,6 +231,7 @@ async def get_nutrient_analysis(product_info: Dict[str, Any]):
                 
         if nutritional_information:
             product_type, calories, sugar, salt, serving_size = find_product_nutrients(product_info.dict())
+            print(f"DEBUG find_product_nutrients successful - {product_type}, {calories}, {sugar}, {salt}, {serving_size}")
             if product_type is not None and serving_size is not None and serving_size > 0:                                                          
                 nutrient_analysis = await analyze_nutrients(product_type, calories, sugar, salt, serving_size)                       
             else:                                                                                                              
@@ -246,6 +250,10 @@ async def get_nutrient_analysis(product_info: Dict[str, Any]):
             return nutritional_level
         else:
             raise HTTPException(status_code=400, detail="Nutritional information is required")
-            
+
+    except HTTPException as http_ex:
+        logger.warning(f"HTTP error occurred: {http_ex.detail}")
+        raise http_ex  # Re-raise HTTP exceptions to maintain status codes
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
