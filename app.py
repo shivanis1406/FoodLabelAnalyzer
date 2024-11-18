@@ -1,6 +1,6 @@
 import streamlit as st
 from openai import OpenAI
-import json, os
+import json, os, httpx, asyncio
 import requests, time
 from data_extractor import extract_data, find_product, get_product
 from nutrient_analyzer import analyze_nutrients
@@ -20,19 +20,32 @@ def get_openai_client():
     return True, OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-@st.cache_resource
-def get_backend_urls():
-    data_extractor_url = "https://data-extractor-67qj89pa0-sonikas-projects-9936eaad.vercel.app/"
-    return data_extractor_url
+#@st.cache_resource
+#def get_backend_urls():
+#    data_extractor_url = "https://data-extractor-67qj89pa0-sonikas-projects-9936eaad.vercel.app/"
+#    return data_extractor_url
 
 debug_mode, client = get_openai_client()
-data_extractor_url = get_backend_urls()
+#data_extractor_url = get_backend_urls()
 assistant_default_doc = None
 
-def extract_data_from_product_image(image_links, data_extractor_url):
-    response = extract_data(image_links)
-    return response
+#def extract_data_from_product_image(image_links):
+#    response = extract_data(image_links)
+#    return response
 
+async def extract_data_from_product_image(image_links):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                "https://foodlabelanalyzer-1.onrender.com/api/extract-data", 
+                json=image_links
+            )
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            return response
+        except httpx.RequestError as e:
+            print(f"An error occurred: {e}")
+            return None
+            
 def get_product_list(product_name_by_user, data_extractor_url):
     response = find_product(product_name_by_user)
     return response
@@ -834,7 +847,7 @@ def chatbot_response(image_urls_str, product_name_by_user, data_extractor_url, e
                     image_urls.append(url)
 
         with st.spinner("Analyzing the product... This may take a moment."):
-            product_info_raw = extract_data_from_product_image(image_urls, data_extractor_url)
+            product_info_raw = extract_data_from_product_image(image_urls)
             print(f"DEBUG product_info_raw from image : {product_info_raw}")
             if 'error' not in json.loads(product_info_raw).keys():
                 final_analysis = analyze_product(json.loads(product_info_raw))
