@@ -896,7 +896,7 @@ class SessionState:
 class ProductSelector:
     """Handles product selection logic"""
     @staticmethod
-    def handle_selection():
+    async def handle_selection():
         if st.session_state.similar_products:
             # Create a container for the selection UI
             selection_container = st.container()
@@ -919,7 +919,7 @@ class ProductSelector:
                     if choice != "None of the above":
                         #st.session_state.selected_product = choice
                         st.session_state.messages.append({"role": "assistant", "content": f"You selected {choice}"})
-                        _, msg = chatbot_response("", choice.split(" by ")[0], extract_info=True)
+                        _, msg = await chatbot_response("", choice.split(" by ")[0], extract_info=True)
                         #Check if analysis couldn't be done because db had incomplete information
                         if msg != "product not found because product information in the db is corrupt":
                             #Only when msg is acceptable
@@ -964,10 +964,10 @@ class ChatManager:
         return response, status
 
     @staticmethod
-    def _handle_product_name(user_input):
+    async def _handle_product_name(user_input):
         st.session_state.product_shared = True
         st.session_state.current_user_input = user_input
-        similar_products, _ = chatbot_response(
+        similar_products, _ = await chatbot_response(
             "", user_input, extract_info=False
         )
         
@@ -980,7 +980,7 @@ class ChatManager:
         return "Product not found in our database. Please provide the image URL of the product.", "no success"
 
     @staticmethod
-    def _handle_product_url(user_input):
+    async def _handle_product_url(user_input):
         is_valid_url = (".jpeg" in user_input or ".jpg" in user_input) and \
                        ("http:/" in user_input or "https:/" in user_input)
         
@@ -988,7 +988,7 @@ class ChatManager:
             return "Please provide the product name first"
         
         if is_valid_url and st.session_state.product_shared:
-            _, msg = chatbot_response(
+            _, msg = await chatbot_response(
                 user_input, "", extract_info=True
             )
             st.session_state.product_selected = True
