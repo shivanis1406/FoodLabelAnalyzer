@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 import json, os, httpx, asyncio
 import requests, time
-from data_extractor import extract_data, find_product, get_product
+from data_extractor import extract_data, get_product
 from nutrient_analyzer import analyze_nutrients
 from rda import find_nutrition
 from typing import Dict, Any
