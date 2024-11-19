@@ -8,7 +8,14 @@ from typing import List, Dict, Any
 from openai import OpenAI
 from typing import Dict, Any
 
-app = FastAPI(title="Nutrition Analysis API")
+app = FastAPI(title="Nutrition Analysis API", debug=True)
+
+# Set up logging at the top of your file
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 debug_mode = True
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -154,7 +161,7 @@ async def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, An
         missing_fields = [field for field in nutrient_name_list + ["servingSize"] 
                          if field not in nutrition_data]
         if missing_fields:
-            print(f"Missing required fields in API response: {missing_fields}")
+            logger.debug(f"Missing required fields in API response: {missing_fields}")
         
         # Validate that all values are numbers
         non_numeric_fields = [field for field, value in nutrition_data.items() 
@@ -169,7 +176,7 @@ async def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, An
         
     except Exception as e:
         # Log the error and raise it for proper handling
-        print(f"Error in RDA analysis: {str(e)}")
+        logger.debug(f"Error in RDA analysis: {str(e)}")
         raise
 
 
@@ -207,7 +214,7 @@ Nutrition Analysis :
 {nutrient_analysis_rda}
 """
     if debug_mode:
-        print(f"\nuser_prompt : \n {user_prompt}")
+        looger.debug(f"\nuser_prompt : \n {user_prompt}")
         
     completion = await client.chat.completions.create(
         model="gpt-4o",  # Make sure to use an appropriate model
@@ -231,20 +238,20 @@ async def get_nutrient_analysis(product_info: Dict[str, Any]):
                 
         if nutritional_information:
             product_type, calories, sugar, salt, serving_size = find_product_nutrients(product_info.dict())
-            print(f"DEBUG find_product_nutrients successful - {product_type}, {calories}, {sugar}, {salt}, {serving_size}")
+            logger.debug(f"DEBUG find_product_nutrients successful - {product_type}, {calories}, {sugar}, {salt}, {serving_size}")
             if product_type is not None and serving_size is not None and serving_size > 0:                                                          
                 nutrient_analysis = await analyze_nutrients(product_type, calories, sugar, salt, serving_size)                       
             else:                                                                                                              
                 raise HTTPException(status_code=400, detail="Product information in the db is corrupt")
-            print(f"DEBUG ! nutrient analysis is {nutrient_analysis}")
+            logger.debug(f"DEBUG ! nutrient analysis is {nutrient_analysis}")
         
             nutrient_analysis_rda_data = await rda_analysis(nutritional_information, serving_size)
-            print(f"DEBUG ! Data for RDA nutrient analysis is of type {type(nutrient_analysis_rda_data)} - {nutrient_analysis_rda_data}")
-            print(f"DEBUG : nutrient_analysis_rda_data['nutritionPerServing'] : {nutrient_analysis_rda_data['nutritionPerServing']}")
-            print(f"DEBUG : nutrient_analysis_rda_data['userServingSize'] : {nutrient_analysis_rda_data['userServingSize']}")
+            logger.debug(f"DEBUG ! Data for RDA nutrient analysis is of type {type(nutrient_analysis_rda_data)} - {nutrient_analysis_rda_data}")
+            logger.debug(f"DEBUG : nutrient_analysis_rda_data['nutritionPerServing'] : {nutrient_analysis_rda_data['nutritionPerServing']}")
+            logger.debug(f"DEBUG : nutrient_analysis_rda_data['userServingSize'] : {nutrient_analysis_rda_data['userServingSize']}")
                     
             nutrient_analysis_rda = await find_nutrition(nutrient_analysis_rda_data)
-            print(f"DEBUG ! RDA nutrient analysis is {nutrient_analysis_rda}")
+            logger.debug(f"DEBUG ! RDA nutrient analysis is {nutrient_analysis_rda}")
                     
             nutritional_level = await analyze_nutrition_icmr_rda(nutrient_analysis, nutrient_analysis_rda)
             return nutritional_level
