@@ -2,7 +2,7 @@ import math, json, os
 from openai import OpenAI
 from typing import Dict, Any
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Function to scale nutrition values
 def scale_nutrition(nutrition_per_serving, user_serving_size):
     scaling_factor = user_serving_size / nutrition_per_serving['servingSize']
@@ -108,7 +108,7 @@ async def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, An
     ]
 
     try:
-        response = await client.chat.completions.create(
+        response = await client.chat.completions.acreate(
             model="gpt-4o",
             messages=[
                 {
