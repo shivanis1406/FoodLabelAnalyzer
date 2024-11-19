@@ -99,7 +99,37 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
             print(f"An error occurred: {e}")
             return None
 
-def generate_final_analysis(brand_name, product_name, nutritional_level, processing_level, all_ingredient_analysis, claims_analysis, refs):
+def generate_final_analysis(
+    brand_name: str,
+    product_name: str,
+    nutritional_level: str,
+    processing_level: str,
+    all_ingredient_analysis: str,
+    claims_analysis: str,
+    refs: list
+):
+    print("Calling cumulative-analysis API")
+    async with httpx.Client() as client_api:
+        try:
+            response = client_api.get(
+                "https://foodlabelanalyzer-api.onrender.com/cumulative_analysis/api/cumulative-analysis",
+                params={
+                    "brand_name": brand_name,
+                    "product_name": product_name,
+                    "nutritional_level": nutritional_level,
+                    "processing_level": processing_level,
+                    "all_ingredient_analysis": all_ingredient_analysis,
+                    "claims_analysis": claims_analysis,
+                    "refs": refs
+                }
+            )
+            response.raise_for_status()  # Raise an error for bad responses
+            return response.text  # Return the JSON response
+        except httpx.RequestError as e:
+            print(f"An error occurred: {e}")
+            return None
+            
+def generate_final_analysis_old(brand_name, product_name, nutritional_level, processing_level, all_ingredient_analysis, claims_analysis, refs):
     global client
     consumption_context = get_consumption_context(f"{product_name} by {brand_name}", client)
     
@@ -232,7 +262,7 @@ def analyze_claims(product_info_from_db):
                 },
                 timeout=httpx.Timeout(
                     connect=10.0,
-                    read=100.0,
+                    read=150.0,
                     write=10.0,
                     pool=10.0
                 )
@@ -273,8 +303,8 @@ async def analyze_product(product_info_from_db):
         processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
         
         if len(claims_list) > 0:                    
-            #claims_analysis = analyze_claims(claims_list, ingredients_list, assistant3.id) if claims_list else ""
-            claims_analysis = analyze_claims(product_info_from_db)
+            claims_analysis_json = analyze_claims(product_info_from_db)
+            claims_analysis = claims_analysis_json["claims_analysis"]
             
         final_analysis = generate_final_analysis(brand_name, product_name, nutritional_level, processing_level, all_ingredient_analysis, claims_analysis, refs)
 
