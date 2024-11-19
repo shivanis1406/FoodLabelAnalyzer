@@ -108,7 +108,7 @@ async def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, An
     ]
 
     try:
-        response = await client.chat.completions.acreate(
+        response = await client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
