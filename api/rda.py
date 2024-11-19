@@ -1,5 +1,7 @@
 import math, json
+from openai import OpenAI
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Function to scale nutrition values
 def scale_nutrition(nutrition_per_serving, user_serving_size):
     scaling_factor = user_serving_size / nutrition_per_serving['servingSize']
@@ -84,3 +86,88 @@ async def find_nutrition(data):
         
     except Exception as e:
         return json.dumps({"error" : "Invalid JSON or input"})
+
+async def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, Any], 
+                product_info_from_db_servingSize: float) -> Dict[str, Any]:
+    """
+    Analyze nutritional information and return RDA analysis data in a structured format.
+    
+    Args:
+        product_info_from_db_nutritionalInformation: Dictionary containing nutritional information
+        product_info_from_db_servingSize: Serving size value
+        
+    Returns:
+        Dictionary containing nutrition per serving and user serving size
+    """
+    global client
+    nutrient_name_list = [
+        'energy', 'protein', 'carbohydrates', 'addedSugars', 'dietaryFiber',
+        'totalFat', 'saturatedFat', 'monounsaturatedFat', 'polyunsaturatedFat',
+        'transFat', 'sodium'
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You will be given nutritional information of a food product. 
+                                Return the data in the exact JSON format specified in the schema, 
+                                with all required fields."""
+                },
+                {
+                    "role": "user",
+                    "content": f"Nutritional content of food product is {json.dumps(product_info_from_db_nutritionalInformation)}. "
+                              f"Extract the values of the following nutrients: {', '.join(nutrient_name_list)}."
+                }
+            ],
+        response_format={"type": "json_schema", "json_schema": {
+            "name": "Nutritional_Info_Label_Reader",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "energy": {"type": "number"},
+                    "protein": {"type": "number"},
+                    "carbohydrates": {"type": "number"},
+                    "addedSugars": {"type": "number"},
+                    "dietaryFiber": {"type": "number"},
+                    "totalFat": {"type": "number"},
+                    "saturatedFat": {"type": "number"},
+                    "monounsaturatedFat": {"type": "number"},
+                    "polyunsaturatedFat": {"type": "number"},
+                    "transFat": {"type": "number"},
+                    "sodium": {"type": "number"},
+                    "servingSize": {"type": "number"},
+                },
+                "required": nutrient_name_list + ["servingSize"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }}
+        )
+        
+        # Parse the JSON response
+        nutrition_data = await json.loads(response.choices[0].message.content)
+        
+        # Validate that all required fields are present
+        missing_fields = [field for field in nutrient_name_list + ["servingSize"] 
+                         if field not in nutrition_data]
+        if missing_fields:
+            print(f"Missing required fields in API response: {missing_fields}")
+        
+        # Validate that all values are numbers
+        non_numeric_fields = [field for field, value in nutrition_data.items() 
+                            if not isinstance(value, (int, float))]
+        if non_numeric_fields:
+            raise ValueError(f"Non-numeric values found in fields: {non_numeric_fields}")
+        
+        return {
+            'nutritionPerServing': nutrition_data,
+            'userServingSize': product_info_from_db_servingSize
+        }
+        
+    except Exception as e:
+        # Log the error and raise it for proper handling
+        print(f"Error in RDA analysis: {str(e)}")
+        raise
