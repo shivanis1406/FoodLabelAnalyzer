@@ -605,7 +605,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
         try:
             response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
-                params={"product_info_from_db": product_info_from_db}
+                params=product_info_from_db
             )
             response.raise_for_status()
             return response.json()
