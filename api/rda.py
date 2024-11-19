@@ -108,7 +108,7 @@ async def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, An
     ]
 
     try:
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
@@ -149,7 +149,7 @@ async def rda_analysis(product_info_from_db_nutritionalInformation: Dict[str, An
         )
         
         # Parse the JSON response
-        nutrition_data = await json.loads(response.choices[0].message.content)
+        nutrition_data = json.loads(response.choices[0].message.content)
         
         # Validate that all required fields are present
         missing_fields = [field for field in nutrient_name_list + ["servingSize"] 
