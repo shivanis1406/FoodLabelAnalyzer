@@ -33,6 +33,7 @@ assistant_default_doc = None
 #    return response
 
 async def extract_data_from_product_image(image_links):
+    print(f"DEBUG - image links are {image_links}")
     async with httpx.AsyncClient() as client_api:
         try:
             response = await client_api.post(
@@ -40,12 +41,13 @@ async def extract_data_from_product_image(image_links):
                 json = image_links,
                 headers = {
                 "Content-Type": "application/json"
-                }
+                },
+                timeout=10.0
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response.json()
         except httpx.RequestError as e:
-            print(f"An error occurred: {e}")
+            print(f"Request error occurred: {e.request.url} - {e}")
             return None
         except httpx.HTTPStatusError as e:
             print(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
