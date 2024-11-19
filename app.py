@@ -604,7 +604,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
 
     # Serialize the entire dictionary
     params = {
-        'product_info_from_db': json.dumps(product_info_from_db)
+        'product_info_from_db': product_info_from_db
     }
 
     print("Sending params:", params)
