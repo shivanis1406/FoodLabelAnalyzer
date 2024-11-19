@@ -599,17 +599,24 @@ Claims Analysis for the product is as follows ->
     else:
         return f"Brand: {brand_name}\n\nProduct: {product_name}\n\nAnalysis:\n\n{completion.choices[0].message.content}"
 
+import httpx
+
 def analyze_processing_level_and_ingredients(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
+    
+    # Wrap the product_info_from_db in a dictionary under the key 'product_info_from_db'
+    request_payload = {
+        "product_info_from_db": product_info_from_db
+    }
     
     with httpx.Client() as client_api:
         try:
             response = client_api.post(
                 "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
-                json=product_info_from_db
+                json=request_payload  # Send the wrapped payload
             )
-            response.raise_for_status()
-            return response.json()
+            response.raise_for_status()  # Raise error for bad responses (4xx, 5xx)
+            return response.json()  # Return the response as JSON
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
             return None
