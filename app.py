@@ -47,6 +47,12 @@ async def extract_data_from_product_image(image_links):
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
             return None
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return None
             
 #def get_product_list(product_name_by_user):
 #    response = find_product(product_name_by_user)
