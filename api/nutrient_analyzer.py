@@ -29,6 +29,8 @@ def log_exceptions(func):
             raise
     return wrapper
 
+app = FastAPI(debug=True)
+
 # Apply the decorator to your endpoint
 @app.post("/api/nutrient-analysis")
 @log_exceptions
