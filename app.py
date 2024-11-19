@@ -8,6 +8,8 @@ from typing import Dict, Any
 from calc_cosine_similarity import  find_relevant_file_paths
 import pickle
 from calc_consumption_context import get_consumption_context
+import httpx
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 #Used the @st.cache_resource decorator on this function. 
 #This Streamlit decorator ensures that the function is only executed once and its result (the OpenAI client) is cached. 
@@ -599,31 +601,39 @@ Claims Analysis for the product is as follows ->
     else:
         return f"Brand: {brand_name}\n\nProduct: {product_name}\n\nAnalysis:\n\n{completion.choices[0].message.content}"
 
-import httpx
 
+@retry(
+    stop=stop_after_attempt(3),  # Retry up to 3 times
+    wait=wait_exponential(multiplier=1, min=4, max=10)  # Exponential backoff
+)
 def analyze_processing_level_and_ingredients(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
     
-    # Wrap the product_info_from_db in a dictionary under the key 'product_info_from_db'
     request_payload = {
         "product_info_from_db": product_info_from_db
     }
     
-    with httpx.Client() as client_api:
-        try:
+    try:
+        with httpx.Client() as client_api:
             response = client_api.post(
                 "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
                 json=request_payload,
-                headers = {
-                "Content-Type": "application/json"
+                headers={
+                    "Content-Type": "application/json"
                 },
-                timeout=20.0
+                timeout=httpx.Timeout(
+                    connect=10.0,
+                    read=30.0,
+                    write=10.0,
+                    pool=10.0
+                )
             )
-            response.raise_for_status()  # Raise error for bad responses (4xx, 5xx)
-            return response.json()  # Return the response as JSON
-        except httpx.RequestError as e:
-            print(f"An error occurred: {e}")
-            return None
+            response.raise_for_status()
+            return response.json()
+    
+    except (httpx.RequestError, httpx.HTTPStatusError) as e:
+        print(f"API call error: {e}")
+        raise  # Re-raise to trigger retry
             
     
 async def analyze_product(product_info_from_db):
