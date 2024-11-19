@@ -2,10 +2,10 @@ import streamlit as st
 from openai import OpenAI
 import json, os, httpx, asyncio
 import requests, time
-from data_extractor import extract_data
-from rda import find_nutrition
+#from data_extractor import extract_data
+#from rda import find_nutrition
 from typing import Dict, Any
-from calc_cosine_similarity import  find_relevant_file_paths
+#from calc_cosine_similarity import  find_relevant_file_paths
 import pickle
 from calc_consumption_context import get_consumption_context
 import httpx
