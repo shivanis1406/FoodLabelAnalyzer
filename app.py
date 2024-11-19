@@ -601,11 +601,32 @@ Claims Analysis for the product is as follows ->
 
 def analyze_processing_level_and_ingredients(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
+
+        # Parse the query parameters into a dictionary
+    params = {
+        '_id': product_info_from_db.get('_id'),
+        'productName': product_info_from_db.get('productName'),
+        'brandName': product_info_from_db.get('brandName'),
+        'ingredients': json.dumps(product_info_from_db.get('ingredients', [])),
+        'servingSize': json.dumps(product_info_from_db.get('servingSize')),
+        'packagingSize': json.dumps(product_info_from_db.get('packagingSize')),
+        'servingsPerPack': product_info_from_db.get('servingsPerPack'),
+        'nutritionalInformation': json.dumps(product_info_from_db.get('nutritionalInformation', [])),
+        'fssaiLicenseNumbers': product_info_from_db.get('fssaiLicenseNumbers'),
+        'claims': product_info_from_db.get('claims', []),
+        'shelfLife': product_info_from_db.get('shelfLife')
+    }
+
+    # Remove None values
+    params = {k: v for k, v in params.items() if v is not None}
+
+    print("Sending params:", params)
+    
     with httpx.Client() as client_api:
         try:
             response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
-                params=product_info_from_db
+                params=params
             )
             response.raise_for_status()
             return response.json()
