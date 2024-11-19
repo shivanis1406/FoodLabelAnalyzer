@@ -1,5 +1,5 @@
 import math, json, os
-from openai import OpenAI
+from openai import AsyncOpenAI
 from typing import Dict, Any
 
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
