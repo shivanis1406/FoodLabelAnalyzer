@@ -412,7 +412,7 @@ def get_assistant_for_ingredient(ingredient, N=2):
         
     return assistant2, refs
 
-async def analyze_nutrition_icmr_rda(product_info_from_db):
+async def analyze_nutrition_using_icmr_rda(product_info_from_db):
     print(f"Calling analyze_nutrition_icmr_rda api - product_info_from_db : {type(product_info_from_db)}")
     async with httpx.AsyncClient() as client:
         try:
@@ -803,7 +803,7 @@ async def analyze_product(product_info_from_db):
         claims_analysis = ""
         refs = []
 
-        nutritional_level = await analyze_nutrition_icmr_rda(product_info_from_db)
+        nutritional_level = await analyze_nutrition_using_icmr_rda(product_info_from_db)
 
         #if nutritional_information:
             #product_type, calories, sugar, salt, serving_size = find_product_nutrients(product_info_from_db)
