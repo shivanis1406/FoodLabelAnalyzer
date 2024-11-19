@@ -679,8 +679,8 @@ async def chatbot_response(image_urls_str, product_name_by_user, extract_info = 
         with st.spinner("Analyzing the product... This may take a moment."):
             product_info_raw = await extract_data_from_product_image(image_urls)
             print(f"DEBUG product_info_raw from image : {product_info_raw}")
-            if 'error' not in json.loads(product_info_raw).keys():
-                final_analysis = analyze_product(json.loads(product_info_raw))
+            if 'error' not in product_info_raw.keys():
+                final_analysis = analyze_product(product_info_raw)
                 return [], final_analysis
             else:
                 return [], f"Product information could not be extracted from the image because of {json.loads(product_info_raw)['error']}"
