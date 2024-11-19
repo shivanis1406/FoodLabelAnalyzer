@@ -6,3 +6,4 @@ fastapi
 motor
 python-dotenv
 uvicorn
+logging
