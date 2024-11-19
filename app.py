@@ -372,7 +372,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
     try:
         with httpx.Client() as client_api:
             response = client_api.post(
-                "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
+                "https://foodlabelanalyzer-api.onrender.com/ingredient_analysis/api/processing_level-ingredient-analysis", 
                 json=request_payload,
                 headers={
                     "Content-Type": "application/json"
