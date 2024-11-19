@@ -601,19 +601,12 @@ Claims Analysis for the product is as follows ->
 
 def analyze_processing_level_and_ingredients(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
-
-    # Serialize the entire dictionary
-    params = {
-        'product_info_from_db': product_info_from_db
-    }
-
-    print("Sending params:", params)
     
     with httpx.Client() as client_api:
         try:
-            response = client_api.get(
+            response = client_api.post(
                 "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
-                params=params
+                json=product_info_from_db
             )
             response.raise_for_status()
             return response.json()
