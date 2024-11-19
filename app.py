@@ -599,7 +599,21 @@ Claims Analysis for the product is as follows ->
     else:
         return f"Brand: {brand_name}\n\nProduct: {product_name}\n\nAnalysis:\n\n{completion.choices[0].message.content}"
 
-
+def analyze_processing_level_and_ingredients(product_info_from_db):
+    print("calling processing level and ingredient_analysis api")
+    async with httpx.AsyncClient() as client_api:
+        try:
+            response = await client_api.get(
+                "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
+                params={"product_info_from_db": product_info_from_db}
+            )
+            response.raise_for_status()
+            return response.json()
+        except httpx.RequestError as e:
+            print(f"An error occurred: {e}")
+            return None
+            
+    
 async def analyze_product(product_info_from_db):
     
     global assistant1, assistant3
@@ -622,14 +636,19 @@ async def analyze_product(product_info_from_db):
 
         nutritional_level = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         
-        if len(ingredients_list) > 0:
-            processing_level = analyze_processing_level(ingredients_list, assistant1.id) if ingredients_list else ""
-            for ingredient in ingredients_list:
-                assistant_id_ingredient, refs_ingredient = get_assistant_for_ingredient(ingredient, 2)
-                ingredient_analysis, is_ingredient_in_doc = analyze_harmful_ingredients(ingredient, assistant_id_ingredient.id)
-                all_ingredient_analysis += ingredient_analysis + "\n"
-                if is_ingredient_in_doc:
-                    refs.extend(refs_ingredient)
+        #if len(ingredients_list) > 0:
+        #    processing_level = analyze_processing_level(ingredients_list, assistant1.id) if ingredients_list else ""
+        #    for ingredient in ingredients_list:
+        #        assistant_id_ingredient, refs_ingredient = get_assistant_for_ingredient(ingredient, 2)
+        #        ingredient_analysis, is_ingredient_in_doc = analyze_harmful_ingredients(ingredient, assistant_id_ingredient.id)
+        #        all_ingredient_analysis += ingredient_analysis + "\n"
+        #        if is_ingredient_in_doc:
+        #            refs.extend(refs_ingredient)
+        
+        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db)
+        refs = refs_all_ingredient_analysis_processing_level_json["refs"]
+        all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
+        processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
         
         if len(claims_list) > 0:                    
             claims_analysis = analyze_claims(claims_list, ingredients_list, assistant3.id) if claims_list else ""
