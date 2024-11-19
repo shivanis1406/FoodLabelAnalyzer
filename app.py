@@ -613,7 +613,8 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
         try:
             response = client_api.post(
                 "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
-                json=request_payload  # Send the wrapped payload
+                json=request_payload,
+                timeout=20.0
             )
             response.raise_for_status()  # Raise error for bad responses (4xx, 5xx)
             return response.json()  # Return the response as JSON
