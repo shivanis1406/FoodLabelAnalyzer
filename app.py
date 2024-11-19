@@ -601,9 +601,9 @@ Claims Analysis for the product is as follows ->
 
 def analyze_processing_level_and_ingredients(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
-    async with httpx.AsyncClient() as client_api:
+    with httpx.AsyncClient() as client_api:
         try:
-            response = await client_api.get(
+            response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/ingredient-analysis/api/processing_level-ingredient-analysis", 
                 params={"product_info_from_db": product_info_from_db}
             )
