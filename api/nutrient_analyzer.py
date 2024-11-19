@@ -45,10 +45,10 @@ app = FastAPI(debug=True)
 @log_exceptions
 async def get_nutrient_analysis(product_info: Dict[str, Any]):
     try:
-        nutritional_information = product_info.nutritionalInformation
+        nutritional_information = product_info["nutritionalInformation"]
         logger.debug(f"Processing nutritional information: {nutritional_information}")
         
-        serving_size = product_info.servingSize.quantity
+        serving_size = product_info["servingSize"]["quantity"]
         logger.debug(f"Serving size: {serving_size}")
         
         nutrient_analysis_rda = ""
