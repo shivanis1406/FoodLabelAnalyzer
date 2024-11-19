@@ -119,7 +119,7 @@ async def get_nutrient_analysis(product_info: Dict[str, Any]):
                 
         if nutritional_information:
             try:
-                product_type, calories, sugar, salt, serving_size = await find_product_nutrients(product_info.dict())
+                product_type, calories, sugar, salt, serving_size = await find_product_nutrients(product_info)
                 logger.info(
                     "find_product_nutrients successful",
                     extra={
