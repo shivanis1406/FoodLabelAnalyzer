@@ -109,7 +109,7 @@ def generate_final_analysis(
     refs: list
 ):
     print("Calling cumulative-analysis API")
-    async with httpx.Client() as client_api:
+    with httpx.Client() as client_api:
         try:
             response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/cumulative_analysis/api/cumulative-analysis",
