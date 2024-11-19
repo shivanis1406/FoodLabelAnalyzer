@@ -7,3 +7,4 @@ motor
 python-dotenv
 uvicorn
 logging
+tenacity
