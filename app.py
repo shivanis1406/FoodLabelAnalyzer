@@ -623,7 +623,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
                 },
                 timeout=httpx.Timeout(
                     connect=10.0,
-                    read=60.0,
+                    read=200.0,
                     write=10.0,
                     pool=10.0
                 )
