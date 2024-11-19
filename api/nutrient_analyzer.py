@@ -107,6 +107,9 @@ app = FastAPI(debug=True)
 @log_exceptions
 async def get_nutrient_analysis(product_info: Dict[str, Any]):
     try:
+        if ("nutritionalInformation" not in product_info or "servingSize" not in product_info or "quantity" not in product_info["servingSize"]):
+            return ""
+            
         nutritional_information = product_info["nutritionalInformation"]
         logger.debug(f"Processing nutritional information: {nutritional_information}")
         
