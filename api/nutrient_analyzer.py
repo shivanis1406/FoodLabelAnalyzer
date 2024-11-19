@@ -1,7 +1,7 @@
 from .icmr import analyze_nutrients
 from .rda import find_nutrition
 import os
-import json
+import json, logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any
