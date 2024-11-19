@@ -37,7 +37,10 @@ async def extract_data_from_product_image(image_links):
         try:
             response = await client_api.post(
                 "https://foodlabelanalyzer-api.onrender.com/data_extractor/api/extract-data", 
-                json=image_links
+                json={"image_links": image_links},  # Properly nest the image links
+                headers={
+                    "Content-Type": "application/json",
+                }
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response.json()
