@@ -38,7 +38,7 @@ def log_exceptions(func):
             raise
     return wrapper
 
-async def find_product_nutrients(product_info_from_db):
+def find_product_nutrients(product_info_from_db):
     #GET Response: {'_id': '6714f0487a0e96d7aae2e839',
     #'brandName': 'Parle', 'claims': ['This product does not contain gold'],
     #'fssaiLicenseNumbers': [10013022002253],
