@@ -18,7 +18,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 @st.cache_resource
 def get_openai_client():
     #Enable debug mode for testing only
-    return True, OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 #@st.cache_resource
@@ -26,13 +26,7 @@ def get_openai_client():
 #    data_extractor_url = "https://data-extractor-67qj89pa0-sonikas-projects-9936eaad.vercel.app/"
 #    return data_extractor_url
 
-debug_mode, client = get_openai_client()
-#data_extractor_url = get_backend_urls()
-assistant_default_doc = None
-
-#def extract_data_from_product_image(image_links):
-#    response = extract_data(image_links)
-#    return response
+client = get_openai_client()
 
 async def extract_data_from_product_image(image_links):
     print(f"DEBUG - image links are {image_links}")
@@ -88,100 +82,8 @@ async def get_product(product_name):
             return response.json()
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
-            return None
+            return None 
     
-# Initialize assistants and vector stores
-# Function to initialize vector stores and assistants
-@st.cache_resource
-def initialize_assistants_and_vector_stores():
-    #Processing Level
-    global client
-    assistant1 = client.beta.assistants.create(
-      name="Processing Level",
-      instructions="You are an expert dietician. Use your knowledge base to answer questions about the processing level of food product.",
-      model="gpt-4o",
-      tools=[{"type": "file_search"}],
-      temperature=0,
-      top_p = 0.85
-      )
-    
-    #Harmful Ingredients
-    assistant3 = client.beta.assistants.create(
-      name="Misleading Claims",
-      instructions="You are an expert dietician. Use your knowledge base to answer questions about the misleading claims about food product.",
-      model="gpt-4o",
-      tools=[{"type": "file_search"}],
-      temperature=0,
-      top_p = 0.85
-      )
-    
-    # Create a vector store
-    vector_store1 = client.beta.vector_stores.create(name="Processing Level Vec")
-    
-    # Ready the files for upload to OpenAI
-    file_paths = ["Processing_Level.docx"]
-    file_streams = [open(path, "rb") for path in file_paths]
-    
-    # Use the upload and poll SDK helper to upload the files, add them to the vector store,
-    # and poll the status of the file batch for completion.
-    file_batch1 = client.beta.vector_stores.file_batches.upload_and_poll(
-      vector_store_id=vector_store1.id, files=file_streams
-    )
-    
-    # You can print the status and the file counts of the batch to see the result of this operation.
-    print(file_batch1.status)
-    print(file_batch1.file_counts)
-    
-    # Create a vector store
-    vector_store3 = client.beta.vector_stores.create(name="Misleading Claims Vec")
-    
-    # Ready the files for upload to OpenAI
-    file_paths = ["MisLeading_Claims.docx"]
-    file_streams = [open(path, "rb") for path in file_paths]
-    
-    # Use the upload and poll SDK helper to upload the files, add them to the vector store,
-    # and poll the status of the file batch for completion.
-    file_batch3 = client.beta.vector_stores.file_batches.upload_and_poll(
-      vector_store_id=vector_store3.id, files=file_streams
-    )
-    
-    # You can print the status and the file counts of the batch to see the result of this operation.
-    print(file_batch3.status)
-    print(file_batch3.file_counts)
-    
-    #Processing Level
-    assistant1 = client.beta.assistants.update(
-      assistant_id=assistant1.id,
-      tool_resources={"file_search": {"vector_store_ids": [vector_store1.id]}},
-    )
-    
-    
-    #Misleading Claims
-    assistant3 = client.beta.assistants.update(
-      assistant_id=assistant3.id,
-      tool_resources={"file_search": {"vector_store_ids": [vector_store3.id]}},
-    )
-
-    embeddings_titles_1 = []
-
-    print("Reading embeddings.pkl")
-    # Load both sentences and embeddings
-    with open('embeddings.pkl', 'rb') as f:
-        loaded_data_1 = pickle.load(f)
-    embeddings_titles_1 = loaded_data_1['embeddings']
-
-    embeddings_titles_2 = []
-    print("Reading embeddings_harvard.pkl")
-    # Load both sentences and embeddings
-    with open('embeddings_harvard.pkl', 'rb') as f:
-        loaded_data_2 = pickle.load(f)
-    embeddings_titles_2 = loaded_data_2['embeddings']
-
-    return assistant1, assistant3, embeddings_titles_1, embeddings_titles_2
-    
-
-#assistant1, assistant3, embeddings_titles_1, embeddings_titles_2 = initialize_assistants_and_vector_stores()
-
 async def analyze_nutrition_using_icmr_rda(product_info_from_db):
     print(f"Calling analyze_nutrition_icmr_rda api - product_info_from_db : {type(product_info_from_db)}")
     async with httpx.AsyncClient() as client_api:
@@ -197,85 +99,8 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
             print(f"An error occurred: {e}")
             return None
 
-def analyze_claims_old(claims, ingredients, assistant_id):
-    global debug_mode, client
-    thread = client.beta.threads.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "A food product named has the following claims: " + ', '.join(claims) + " and ingredients: " + ', '.join(ingredients) + """. Please evaluate the validity of each claim as well as assess if the product name is misleading.
-The output must be in JSON format as follows: 
-
-{
-  <claim_name>: {
-    'Verdict': <A judgment on the claim's accuracy, ranging from 'Accurate' to varying degrees of 'Misleading'>,
-    'Why?': <A concise, bulleted summary explaining the specific ingredients or aspects contributing to the discrepancy>,
-    'Detailed Analysis': <An in-depth explanation of the claim, incorporating relevant regulatory guidelines and health perspectives to support the verdict>
-  }
-}
-"""
-            }
-                ]
-    )
-    
-    run = client.beta.threads.runs.create_and_poll(
-        thread_id=thread.id,
-        assistant_id=assistant_id,
-        include=["step_details.tool_calls[*].file_search.results[*].content"]
-    )
-    
-    # Polling loop to wait for a response in the thread
-    messages = []
-    max_retries = 10  # You can set a maximum retry limit
-    retries = 0
-    wait_time = 2  # Seconds to wait between retries
-
-    while retries < max_retries:
-        messages = list(client.beta.threads.messages.list(thread_id=thread.id, run_id=run.id))
-        if messages:  # If we receive any messages, break the loop
-            break
-        retries += 1
-        time.sleep(wait_time)
-
-    # Check if we got the message content
-    if not messages:
-        raise TimeoutError("Processing Claims : No messages were returned after polling.")
-        
-    message_content = messages[0].content[0].text
-    
-      
-    annotations = message_content.annotations
-    
-    #citations = []
-    
-    #print(f"Length of annotations is {len(annotations)}")
-    
-    for index, annotation in enumerate(annotations):
-          if file_citation := getattr(annotation, "file_citation", None):
-              #cited_file = client.files.retrieve(file_citation.file_id)
-              #citations.append(f"[{index}] {cited_file.filename}")
-              message_content.value = message_content.value.replace(annotation.text, "")
-      
-    #if debug_mode:
-    #    claims_not_found_in_doc = []
-    #    print(message_content.value)
-    #    for key, value in json.loads(message_content.value.replace("```", "").replace("json", "")).items():
-    #          if value.startswith("(NOT FOUND IN DOCUMENT)"):
-    #              claims_not_found_in_doc.append(key)
-    #    print(f"Claims not found in the doc are {','.join(claims_not_found_in_doc)}")
-    #claims_analysis = json.loads(message_content.value.replace("```", "").replace("json", "").replace("(NOT FOUND IN DOCUMENT) ", ""))
-    claims_analysis = {}
-    if message_content.value != "":
-        claims_analysis = json.loads(message_content.value.replace("```", "").replace("json", ""))
-
-    claims_analysis_str = ""
-    for key, value in claims_analysis.items():
-      claims_analysis_str += f"{key}: {value}\n"
-    
-    return claims_analysis_str
-
 def generate_final_analysis(brand_name, product_name, nutritional_level, processing_level, all_ingredient_analysis, claims_analysis, refs):
-    global debug_mode, client
+    global client
     consumption_context = get_consumption_context(f"{product_name} by {brand_name}", client)
     
     system_prompt = """Tell the consumer whether the product is a healthy option at the assumed functionality along with the reasoning behind why it is a good option or not. Refer to Consumption Context as a guide for generating a recommendation. 
@@ -340,8 +165,7 @@ Ingredient Analysis for the product is as follows ->
 Claims Analysis for the product is as follows ->
 {claims_analysis}
 """
-    if debug_mode:
-        print(f"\nuser_prompt : \n {user_prompt}")
+    print(f"\nuser_prompt : \n {user_prompt}")
         
     completion = client.chat.completions.create(
         model="gpt-4o",  # Make sure to use an appropriate model
