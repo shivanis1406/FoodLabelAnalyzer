@@ -109,8 +109,13 @@ def generate_final_analysis(
     refs: list
 ):
     print("Calling cumulative-analysis API")
-    with httpx.Client() as client_api:
+    
+    # Create a client with a longer timeout (120 seconds)
+    with httpx.Client(timeout=150.0) as client_api:
         try:
+            # Convert the refs list to a JSON string
+            refs_str = json.dumps(refs)
+            
             response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/cumulative_analysis/api/cumulative-analysis",
                 params={
@@ -120,12 +125,17 @@ def generate_final_analysis(
                     "processing_level": processing_level,
                     "all_ingredient_analysis": all_ingredient_analysis,
                     "claims_analysis": claims_analysis,
-                    "refs": json.dumps(refs)
+                    "refs": refs_str
                 }
             )
-            response.raise_for_status()  # Raise an error for bad responses
-            return response.text  # Return the JSON response
-        except httpx.RequestError as e:
+            response.raise_for_status()
+            return response.text
+            
+        except httpx.TimeoutException as e:
+            print(f"Request timed out: {e}")
+            return None
+            
+        except Exception as e:
             print(f"An error occurred: {e}")
             return None
             
