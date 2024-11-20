@@ -114,7 +114,7 @@ def generate_final_analysis(
     with httpx.Client(timeout=150.0) as client_api:
         try:
             # Convert the refs list to a JSON string
-            refs_str = json.dumps(refs)
+            refs_str = ",".join(refs)
             
             response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/cumulative_analysis/api/cumulative-analysis",
