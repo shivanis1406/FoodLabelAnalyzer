@@ -115,7 +115,7 @@ def generate_final_analysis(
         try:
             # Convert the refs list to a JSON string
             refs_str = ",".join(refs)
-            print(f"sending refs to API - {refs_str}")
+            print(f"sending refs to API for product {product_name} by {brand_name} - {refs_str}")
             
             response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/cumulative_analysis/api/cumulative-analysis",
