@@ -58,7 +58,7 @@ async def extract_data_from_product_image(image_links):
 
 async def get_product_list(product_name_by_user):
     print("calling find-product api")
-    async with httpx.AsyncClient() as client_api:
+    async with httpx.AsyncClient(timeout=50.0) as client_api:
         try:
             response = await client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/data_extractor/api/find-product", 
@@ -72,7 +72,7 @@ async def get_product_list(product_name_by_user):
 
 async def get_product(product_name):
     print("calling get-product api")
-    async with httpx.AsyncClient() as client_api:
+    async with httpx.AsyncClient(timeout=50.0) as client_api:
         try:
             response = await client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/data_extractor/api/get-product", 
