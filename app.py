@@ -129,6 +129,7 @@ def generate_final_analysis(
                 }
             )
             response.raise_for_status()
+            print(f"Final response : {response.text}")
             formatted_response = response.text.replace('\\n', '\n')
             return formatted_response
             
