@@ -123,7 +123,7 @@ def generate_final_analysis(
     print(f"Calling cumulative-analysis API with refs : {refs}")
     
     # Create a client with a longer timeout (120 seconds)
-    with httpx.Client(timeout=150.0) as client_api:
+    with httpx.Client() as client_api:
         try:
             # Convert the refs list to a JSON string
             refs_str = ",".join(refs)
@@ -139,7 +139,13 @@ def generate_final_analysis(
                     "all_ingredient_analysis": all_ingredient_analysis,
                     "claims_analysis": claims_analysis,
                     "refs": refs_str
-                }
+                },
+                timeout=httpx.Timeout(
+                    connect=10.0,
+                    read=300.0,
+                    write=10.0,
+                    pool=10.0
+                )
             )
             response.raise_for_status()
             formatted_response = response.text.replace('\\n', '\n')
@@ -175,7 +181,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
                 },
                 timeout=httpx.Timeout(
                     connect=10.0,
-                    read=500.0,
+                    read=600.0,
                     write=10.0,
                     pool=10.0
                 )
