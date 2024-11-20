@@ -145,7 +145,7 @@ def generate_final_analysis(
                 },
                 timeout=httpx.Timeout(
                     connect=10.0,
-                    read=300.0,
+                    read=500.0,
                     write=10.0,
                     pool=10.0
                 )
@@ -157,7 +157,6 @@ def generate_final_analysis(
         except httpx.TimeoutException as e:
             print(f"Request timed out: {e}")
             return None
-            
         except Exception as e:
             print(f"An error occurred: {e}")
             return None
