@@ -120,7 +120,7 @@ def generate_final_analysis(
     claims_analysis: str,
     refs: list
 ):
-    print("Calling cumulative-analysis API")
+    print(f"Calling cumulative-analysis API with refs : {refs}")
     
     # Create a client with a longer timeout (120 seconds)
     with httpx.Client(timeout=150.0) as client_api:
