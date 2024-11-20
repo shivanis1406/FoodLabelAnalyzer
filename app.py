@@ -84,8 +84,8 @@ async def get_product(product_name):
                 "https://foodlabelanalyzer-api.onrender.com/data_extractor/api/get-product", 
                 params={"product_name": product_name},
                 timeout=httpx.Timeout(
-                    connect=100.0,
-                    read=500.0,
+                    connect=300.0,
+                    read=700.0,
                     pool=50.0,
                     write=10.0
                 )
