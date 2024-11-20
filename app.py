@@ -66,7 +66,8 @@ async def get_product_list(product_name_by_user):
                 timeout=httpx.Timeout(
                     connect=100.0,
                     read=500.0,
-                    pool=50.0
+                    pool=50.0,
+                    write=10.0
                 )
             )
             response.raise_for_status()
@@ -85,7 +86,8 @@ async def get_product(product_name):
                 timeout=httpx.Timeout(
                     connect=100.0,
                     read=500.0,
-                    pool=50.0
+                    pool=50.0,
+                    write=10.0
                 )
             )
             response.raise_for_status()
