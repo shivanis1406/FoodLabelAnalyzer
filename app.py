@@ -163,10 +163,6 @@ def generate_final_analysis(
             return None
 
 
-@retry(
-    stop=stop_after_attempt(2),  # Retry up to 2 times
-    wait=wait_exponential(multiplier=1, min=4, max=10)  # Exponential backoff
-)
 def analyze_processing_level_and_ingredients(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
     
@@ -191,10 +187,12 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
             )
             response.raise_for_status()
             return response.json()
-    
+    except httpx.TimeoutException as e:
+            print(f"The request timed out : {e}")
+            return None
     except (httpx.RequestError, httpx.HTTPStatusError) as e:
-        print(f"API call error: {e}")
-        raise  # Re-raise to trigger retry
+            print(f"API call error: {e}")
+            return None
 
 def analyze_claims(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
@@ -223,7 +221,7 @@ def analyze_claims(product_info_from_db):
     
     except (httpx.RequestError, httpx.HTTPStatusError) as e:
         print(f"API call error: {e}")
-        raise  # Re-raise to trigger retry
+        return None 
             
     
 async def analyze_product(product_info_from_db):
