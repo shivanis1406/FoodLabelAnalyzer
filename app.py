@@ -129,7 +129,8 @@ def generate_final_analysis(
                 }
             )
             response.raise_for_status()
-            return response.text
+            formatted_response = response.text.replace('\\n', '\n')
+            return formatted_response
             
         except httpx.TimeoutException as e:
             print(f"Request timed out: {e}")
