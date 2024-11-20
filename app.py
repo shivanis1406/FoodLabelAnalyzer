@@ -92,6 +92,9 @@ async def get_product(product_name):
             )
             response.raise_for_status()
             return response.json()
+        except httpx.TimeoutException as e:
+            print(f"The request timed out : {e}")
+            return None
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
             return None 
