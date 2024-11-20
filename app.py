@@ -120,7 +120,7 @@ def generate_final_analysis(
                     "processing_level": processing_level,
                     "all_ingredient_analysis": all_ingredient_analysis,
                     "claims_analysis": claims_analysis,
-                    "refs": refs
+                    "refs": json.dumps(refs)
                 }
             )
             response.raise_for_status()  # Raise an error for bad responses
