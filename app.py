@@ -115,6 +115,7 @@ def generate_final_analysis(
         try:
             # Convert the refs list to a JSON string
             refs_str = ",".join(refs)
+            print(f"sending refs to API - {refs_str}")
             
             response = client_api.get(
                 "https://foodlabelanalyzer-api.onrender.com/cumulative_analysis/api/cumulative-analysis",
@@ -129,7 +130,6 @@ def generate_final_analysis(
                 }
             )
             response.raise_for_status()
-            print(f"Final response : {response.text}")
             formatted_response = response.text.replace('\\n', '\n')
             return formatted_response
             
