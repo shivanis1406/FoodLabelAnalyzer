@@ -145,7 +145,7 @@ def generate_final_analysis(
                 },
                 timeout=httpx.Timeout(
                     connect=10.0,
-                    read=500.0,
+                    read=800.0,
                     write=10.0,
                     pool=10.0
                 )
