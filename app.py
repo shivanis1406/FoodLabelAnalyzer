@@ -111,7 +111,10 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
                     read=200.0,
                     write=10.0,
                     pool=10.0
-                )
+                ),
+                headers={
+                    "Content-Type": "application/json"
+                }
             )
             response.raise_for_status()
             # Add more detailed logging
