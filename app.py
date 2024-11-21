@@ -159,19 +159,21 @@ def generate_final_analysis(
     with httpx.Client() as client_api:
         try:
             # Convert the refs list to a JSON string
-            refs_str = ",".join(refs)
-            print(f"sending refs to API for product {product_name} by {brand_name} - {refs_str}")
+            print(f"sending refs to API for product {product_name} by {brand_name} - {refs}")
             
-            response = client_api.get(
+            response = client_api.post(
                 f"{render_host_url}/cumulative_analysis/api/cumulative-analysis",
-                params={
+                json={
                     "brand_name": brand_name,
                     "product_name": product_name,
                     "nutritional_level": nutritional_level,
                     "processing_level": processing_level,
                     "all_ingredient_analysis": all_ingredient_analysis,
                     "claims_analysis": claims_analysis,
-                    "refs": refs_str
+                    "refs": refs
+                },
+                headers={
+                    "Content-Type": "application/json"
                 },
                 timeout=httpx.Timeout(
                     connect=10.0,
