@@ -114,14 +114,27 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
                 )
             )
             response.raise_for_status()
-            print(f"response.json : {response.json()}")
-            return response.json()
+            # Add more detailed logging
+            response_json = response.json()
+            print(f"Full response JSON: {response_json}")
+            
+            # Validate response structure
+            if not response_json:
+                print("Received empty JSON response")
+                return None
+            
+            return response_json
         except httpx.TimeoutException as e:
-            print(f"The request timed out : {e}")
-            return None
+            print(f"Timeout error: {e}")
+            raise  # Re-raise to propagate the error
+        
         except httpx.RequestError as e:
-            print(f"An error occurred: {e}")
-            return None
+            print(f"Request error: {e}")
+            raise  # Re-raise to propagate the error
+        
+        except Exception as e:
+            print(f"Unexpected error in API call: {e}")
+            raise
 
 def generate_final_analysis(
     brand_name: str,
