@@ -27,13 +27,15 @@ def get_openai_client():
 #    return data_extractor_url
 
 client = get_openai_client()
+render_host_url = "https://foodlabelanalyzer-api-2.onrender.com"
 
 async def extract_data_from_product_image(image_links):
+    global render_host_url
     print(f"DEBUG - image links are {image_links}")
     async with httpx.AsyncClient() as client_api:
         try:
             response = await client_api.post(
-                "https://foodlabelanalyzer-api.onrender.com/data_extractor/api/extract-data", 
+                f"{render_host_url}/data_extractor/api/extract-data", 
                 json = { "image_links" : image_links },
                 headers = {
                 "Content-Type": "application/json"
@@ -57,11 +59,12 @@ async def extract_data_from_product_image(image_links):
 #    return response
 
 async def get_product_list(product_name_by_user):
+    global render_host_url
     print("calling find-product api")
     async with httpx.AsyncClient() as client_api:
         try:
             response = await client_api.get(
-                "https://foodlabelanalyzer-api.onrender.com/data_extractor/api/find-product", 
+                f"{render_host_url}/data_extractor/api/find-product", 
                 params={"product_name": product_name_by_user},
                 timeout=httpx.Timeout(
                     connect=100.0,
@@ -77,11 +80,12 @@ async def get_product_list(product_name_by_user):
             return None
 
 async def get_product(product_name):
+    global render_host_url
     print("calling get-product api")
     async with httpx.AsyncClient() as client_api:
         try:
             response = await client_api.get(
-                "https://foodlabelanalyzer-api.onrender.com/data_extractor/api/get-product", 
+                f"{render_host_url}/data_extractor/api/get-product", 
                 params={"product_name": product_name},
                 timeout=httpx.Timeout(
                     connect=300.0,
@@ -100,11 +104,12 @@ async def get_product(product_name):
             return None 
     
 async def analyze_nutrition_using_icmr_rda(product_info_from_db):
+    global render_host_url
     print(f"Calling analyze_nutrition_icmr_rda api - product_info_from_db : {type(product_info_from_db)}")
     async with httpx.AsyncClient() as client_api:
         try:
             response = await client_api.post(
-                "https://foodlabelanalyzer-api.onrender.com/nutrient_analyzer/api/nutrient-analysis", 
+                f"{render_host_url}/nutrient_analyzer/api/nutrient-analysis", 
                 json={"product_info_from_db": product_info_from_db},
                 timeout=httpx.Timeout(
                     connect=50.0,
@@ -149,7 +154,7 @@ def generate_final_analysis(
     refs: list
 ):
     print(f"Calling cumulative-analysis API with refs : {refs}")
-    
+    global render_host_url
     # Create a client with a longer timeout (120 seconds)
     with httpx.Client() as client_api:
         try:
@@ -158,7 +163,7 @@ def generate_final_analysis(
             print(f"sending refs to API for product {product_name} by {brand_name} - {refs_str}")
             
             response = client_api.get(
-                "https://foodlabelanalyzer-api.onrender.com/cumulative_analysis/api/cumulative-analysis",
+                f"{render_host_url}/cumulative_analysis/api/cumulative-analysis",
                 params={
                     "brand_name": brand_name,
                     "product_name": product_name,
@@ -189,7 +194,7 @@ def generate_final_analysis(
 
 def analyze_processing_level_and_ingredients(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
-    
+    global render_host_url
     request_payload = {
         "product_info_from_db": product_info_from_db
     }
@@ -197,7 +202,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
     try:
         with httpx.Client() as client_api:
             response = client_api.post(
-                "https://foodlabelanalyzer-api.onrender.com/ingredient_analysis/api/processing_level-ingredient-analysis", 
+                f"{render_host_url}/ingredient_analysis/api/processing_level-ingredient-analysis", 
                 json=request_payload,
                 headers={
                     "Content-Type": "application/json"
@@ -220,7 +225,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db):
 
 def analyze_claims(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
-    
+    global render_host_url
     request_payload = {
         "product_info_from_db": product_info_from_db
     }
@@ -228,7 +233,7 @@ def analyze_claims(product_info_from_db):
     try:
         with httpx.Client() as client_api:
             response = client_api.post(
-                "https://foodlabelanalyzer-api.onrender.com/claims_analysis/api/claims-analysis", 
+                f"{render_host_url}/claims_analysis/api/claims-analysis", 
                 json=request_payload,
                 headers={
                     "Content-Type": "application/json"
@@ -249,9 +254,7 @@ def analyze_claims(product_info_from_db):
             
     
 async def analyze_product(product_info_from_db):
-    
-    global assistant1, assistant3
-    
+        
     if product_info_from_db:
         brand_name = product_info_from_db.get("brandName", "")
         product_name = product_info_from_db.get("productName", "")
