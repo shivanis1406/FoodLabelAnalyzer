@@ -105,11 +105,20 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
         try:
             response = await client_api.post(
                 "https://foodlabelanalyzer-api.onrender.com/nutrient_analyzer/api/nutrient-analysis", 
-                json=product_info_from_db
+                json=product_info_from_db,
+                timeout=httpx.Timeout(
+                    connect=10.0,
+                    read=200.0,
+                    write=10.0,
+                    pool=10.0
+                )
             )
             response.raise_for_status()
             print(f"response.json : {response.json()}")
             return response.json()
+        except httpx.TimeoutException as e:
+            print(f"The request timed out : {e}")
+            return None
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
             return None
