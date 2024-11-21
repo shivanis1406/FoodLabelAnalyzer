@@ -107,7 +107,7 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
                 "https://foodlabelanalyzer-api.onrender.com/nutrient_analyzer/api/nutrient-analysis", 
                 json={"product_info_from_db": product_info_from_db},
                 timeout=httpx.Timeout(
-                    connect=10.0,
+                    connect=50.0,
                     read=200.0,
                     write=10.0,
                     pool=10.0
