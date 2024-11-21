@@ -38,7 +38,7 @@ async def extract_data_from_product_image(image_links):
                 headers = {
                 "Content-Type": "application/json"
                 },
-                timeout=10.0
+                timeout=50.0
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response.json()
