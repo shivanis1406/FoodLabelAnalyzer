@@ -108,8 +108,8 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
                 json=product_info_from_db
             )
             response.raise_for_status()
-            print(f"response.text : {response.text}")
-            return response.text
+            print(f"response.json : {response.json()}")
+            return response.json()
         except httpx.RequestError as e:
             print(f"An error occurred: {e}")
             return None
@@ -243,8 +243,8 @@ async def analyze_product(product_info_from_db):
         claims_analysis = ""
         refs = []
 
-        nutritional_level = await analyze_nutrition_using_icmr_rda(product_info_from_db)
-        
+        nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
+        nutritional_level = nutritional_level_json["nutrition_analysis"]
         refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db)
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
