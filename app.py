@@ -314,7 +314,9 @@ async def chatbot_response(image_urls_str, product_name_by_user, extract_info = 
                     return [], "Product list not found"
             
         elif extract_info == True:
-            with st.spinner("Analyzing product using data from 3,000+ peer-reviewed journal papers...\n\n<small>This may take a few minutes</small>", type="html"):
+            with st.spinner("Analyzing product using data from 3,000+ peer-reviewed journal papers..."):
+                st.caption("This may take a few minutes")
+                
                 product_info_raw = await get_product(product_name_by_user)
                 print(f"DEBUG product_info_raw from name: {type(product_info_raw)} {product_info_raw}")
                 if not product_info_raw:
