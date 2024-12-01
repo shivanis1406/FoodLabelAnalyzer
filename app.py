@@ -65,20 +65,9 @@ def create_assistant_and_embeddings(embeddings_file_list):
       tool_resources={"file_search": {"vector_store_ids": [vector_store1.id]}},
     )
 
-    embeddings_titles_list = []
-    for embeddings_file in embeddings_file_list:
-      embeddings_titles = []
-  
-      print(f"Reading {embeddings_file}")
-      # Load both sentences and embeddings
-      with open(embeddings_file, 'rb') as f:
-          loaded_data = pickle.load(f)
-          embeddings_titles = loaded_data['embeddings']
-          embeddings_titles_list.append(embeddings_titles)
-
-    return assistant1, embeddings_titles_list
+    return assistant1
     
-assistant_p, embeddings_titles_list = create_assistant_and_embeddings(['embeddings.pkl', 'embeddings_harvard.pkl'])
+assistant_p = create_assistant_and_embeddings(['embeddings.pkl', 'embeddings_harvard.pkl'])
 
 async def extract_data_from_product_image(image_links):
     global render_host_url
@@ -245,17 +234,14 @@ def generate_final_analysis(
             return None
 
 
-def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id, embeddings_titles_list):
+def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id):
     print("calling processing level and ingredient_analysis api")
     print(f"assistant_p_id is of type {type(assistant_p_id)}")
-    print(f"embeddings_titles_list is of type {type(embeddings_titles_list)}")
-    print(f"embeddings_titles_list[0][0] is of type {type(embeddings_titles_list[0][0])}")
 
     global render_host_url
     request_payload = {
         "product_info_from_db": product_info_from_db,
-        "assistant_p_id": assistant_p_id, 
-        "embeddings_titles_list": embeddings_titles_list
+        "assistant_p_id": assistant_p_id
     }
     
     try:
@@ -333,7 +319,7 @@ async def analyze_product(product_info_from_db):
 
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
-        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, embeddings_titles_list)
+        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id)
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
         processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
