@@ -321,8 +321,9 @@ async def analyze_product(product_info_from_db):
         start_time = time.time()
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
-        print(f"DEBUG - nutritional_level is found. Now calling ingredient analysis API after time {time.time() - start_time}")
+        print(f"DEBUG - Calling ingredient analysis API. Nutritional Analysis finished in {time.time() - start_time} seconds")
         refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id)
+        print(f"DEBUG - Ingredient analysis finished in {time.time() - start_time} seconds")
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
         processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
@@ -330,8 +331,10 @@ async def analyze_product(product_info_from_db):
         if len(claims_list) > 0:                    
             claims_analysis_json = analyze_claims(product_info_from_db)
             claims_analysis = claims_analysis_json["claims_analysis"]
+            print(f"DEBUG - Claims analysis finished in {time.time() - start_time} seconds")
             
         final_analysis = generate_final_analysis(brand_name, product_name, nutritional_level, processing_level, all_ingredient_analysis, claims_analysis, refs)
+        print(f"DEBUG - Cumulative analysis finished in {time.time() - start_time} seconds")
 
         return final_analysis
     #else:
