@@ -254,13 +254,7 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
                 json=request_payload,
                 headers={
                     "Content-Type": "application/json"
-                },
-                timeout=httpx.Timeout(
-                    connect=10.0,
-                    read=600.0,
-                    write=10.0,
-                    pool=10.0
-                )
+                }
             )
             print(f"DEBUG - Inside Ingredient analysis API 2 {time.time() - start_time} sec")
             response.raise_for_status()
