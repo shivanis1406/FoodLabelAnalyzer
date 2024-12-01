@@ -29,6 +29,7 @@ def get_openai_client():
 client = get_openai_client()
 render_host_url = "https://foodlabelanalyzer-api-2.onrender.com"
 
+@st.cache_resource
 def create_assistant_and_embeddings():
 
     global client
