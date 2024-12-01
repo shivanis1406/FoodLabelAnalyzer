@@ -43,7 +43,7 @@ def create_assistant_and_embeddings(client, embeddings_file_list):
     vector_store1 = client.beta.vector_stores.create(name="Processing Level Vec")
     
     # Ready the files for upload to OpenAI
-    file_paths = ["docs/Processing_Level.docx"]
+    file_paths = ["./Processing_Level.docx"]
     file_streams = [open(path, "rb") for path in file_paths]
     
     # Use the upload and poll SDK helper to upload the files, add them to the vector store,
