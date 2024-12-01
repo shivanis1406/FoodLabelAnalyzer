@@ -249,7 +249,7 @@ def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_i
     print("calling processing level and ingredient_analysis api")
     print(f"assistant_p_id is of type {type(assistant_p_id)}")
     print(f"embeddings_titles_list is of type {type(embeddings_titles_list)}")
-    print(f"embeddings_titles_list[0] is of type {type(embeddings_titles_list[0])}")
+    print(f"embeddings_titles_list[0][0] is of type {type(embeddings_titles_list[0][0])}")
 
     global render_host_url
     request_payload = {
