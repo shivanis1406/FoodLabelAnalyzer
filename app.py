@@ -317,9 +317,10 @@ async def analyze_product(product_info_from_db):
         claims_analysis = ""
         refs = []
 
+        start_time = time.time()
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
-        print(f"DEBUG - nutritional_level is found. Now calling ingredient analysis API")
+        print(f"DEBUG - nutritional_level is found. Now calling ingredient analysis API after time {time.time() - start_time}")
         refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id)
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
