@@ -256,8 +256,8 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
                     "Content-Type": "application/json"
                 },
                 timeout=httpx.Timeout(
-                    connect=10.0,
-                    read=200.0,
+                    connect=5.0,
+                    read=600.0,
                     write=10.0,
                     pool=10.0
                 )
