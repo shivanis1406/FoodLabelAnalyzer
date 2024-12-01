@@ -235,7 +235,7 @@ def generate_final_analysis(
             return None
 
 
-def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id):
+async def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id):
     print("calling processing level and ingredient_analysis api")
     print(f"assistant_p_id is of type {type(assistant_p_id)}")
 
@@ -246,8 +246,9 @@ def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_i
     }
     
     try:
-        with httpx.Client() as client_api:
-            response = client_api.post(
+        #with httpx.Client() as client_api
+        async with httpx.AsyncClient() as client_api:
+            response = await client_api.post(
                 f"{render_host_url}/ingredient_analysis/api/processing_level-ingredient-analysis", 
                 json=request_payload,
                 headers={
@@ -322,7 +323,7 @@ async def analyze_product(product_info_from_db):
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
         print(f"DEBUG - Calling ingredient analysis API. Nutritional Analysis finished in {time.time() - start_time} seconds")
-        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id)
+        refs_all_ingredient_analysis_processing_level_json = await analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id)
         print(f"DEBUG - Ingredient analysis finished in {time.time() - start_time} seconds")
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
