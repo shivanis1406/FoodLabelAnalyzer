@@ -75,7 +75,7 @@ def create_assistant_and_embeddings(client, embeddings_file_list):
 
     return assistant1, embeddings_titles_list
     
-assistant_p, embeddings_titles_list = create_assistant_and_embeddings(client, ['docs/embeddings.pkl', 'docs/embeddings_harvard.pkl'])
+assistant_p, embeddings_titles_list = create_assistant_and_embeddings(client, ['embeddings.pkl', 'embeddings_harvard.pkl'])
 
 async def extract_data_from_product_image(image_links):
     global render_host_url
