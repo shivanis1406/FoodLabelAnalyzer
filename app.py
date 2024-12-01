@@ -29,7 +29,7 @@ def get_openai_client():
 client = get_openai_client()
 render_host_url = "https://foodlabelanalyzer-api-2.onrender.com"
 
-def create_assistant_and_embeddings(embeddings_file_list):
+def create_assistant_and_embeddings():
 
     global client
     
@@ -67,7 +67,7 @@ def create_assistant_and_embeddings(embeddings_file_list):
 
     return assistant1
     
-assistant_p = create_assistant_and_embeddings(['embeddings.pkl', 'embeddings_harvard.pkl'])
+assistant_p = create_assistant_and_embeddings()
 
 async def extract_data_from_product_image(image_links):
     global render_host_url
@@ -299,7 +299,7 @@ def analyze_claims(product_info_from_db):
             
     
 async def analyze_product(product_info_from_db):
-    global assistant_p, embeddings_titles_list
+    global assistant_p
     
     if product_info_from_db:
         brand_name = product_info_from_db.get("brandName", "")
