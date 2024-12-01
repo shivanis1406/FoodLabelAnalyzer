@@ -29,7 +29,10 @@ def get_openai_client():
 client = get_openai_client()
 render_host_url = "https://foodlabelanalyzer-api-2.onrender.com"
 
-def create_assistant_and_embeddings(client, embeddings_file_list):
+def create_assistant_and_embeddings(embeddings_file_list):
+
+    global client
+    
     assistant1 = client.beta.assistants.create(
       name="Processing Level",
       instructions="You are an expert dietician. Use your knowledge base to answer questions about the processing level of food product.",
@@ -75,7 +78,7 @@ def create_assistant_and_embeddings(client, embeddings_file_list):
 
     return assistant1, embeddings_titles_list
     
-assistant_p, embeddings_titles_list = create_assistant_and_embeddings(client, ['embeddings.pkl', 'embeddings_harvard.pkl'])
+assistant_p, embeddings_titles_list = create_assistant_and_embeddings(['embeddings.pkl', 'embeddings_harvard.pkl'])
 
 async def extract_data_from_product_image(image_links):
     global render_host_url
@@ -306,7 +309,8 @@ def analyze_claims(product_info_from_db):
             
     
 async def analyze_product(product_info_from_db):
-        
+    global assistant_p, embeddings_titles_list
+    
     if product_info_from_db:
         brand_name = product_info_from_db.get("brandName", "")
         product_name = product_info_from_db.get("productName", "")
@@ -325,7 +329,7 @@ async def analyze_product(product_info_from_db):
 
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
-        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db)
+        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p, embeddings_titles_list)
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
         processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
