@@ -245,12 +245,12 @@ def generate_final_analysis(
             return None
 
 
-def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p, embeddings_titles_list):
+def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id, embeddings_titles_list):
     print("calling processing level and ingredient_analysis api")
     global render_host_url
     request_payload = {
         "product_info_from_db": product_info_from_db,
-        "assistant_p": assistant_p, 
+        "assistant_p_id": assistant_p_id, 
         "embeddings_titles_list": embeddings_titles_list
     }
     
@@ -329,7 +329,7 @@ async def analyze_product(product_info_from_db):
 
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
-        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p, embeddings_titles_list)
+        refs_all_ingredient_analysis_processing_level_json = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, embeddings_titles_list)
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
         processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
