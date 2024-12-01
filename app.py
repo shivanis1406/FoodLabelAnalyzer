@@ -242,7 +242,7 @@ def generate_final_analysis(
             return None
 
 
-def analyze_processing_level_and_ingredients(product_info_from_db):
+def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p, embeddings_titles_list):
     print("calling processing level and ingredient_analysis api")
     global render_host_url
     request_payload = {
