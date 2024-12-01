@@ -235,7 +235,7 @@ def generate_final_analysis(
             return None
 
 
-async def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id):
+async def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id, start_time):
     print("calling processing level and ingredient_analysis api")
     print(f"assistant_p_id is of type {type(assistant_p_id)}")
 
@@ -247,6 +247,7 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
     
     try:
         #with httpx.Client() as client_api
+        print(f"DEBUG - Inside Ingredient analysis API 1 {time.time() - start_time} sec")
         async with httpx.AsyncClient() as client_api:
             response = await client_api.post(
                 f"{render_host_url}/ingredient_analysis/api/processing_level-ingredient-analysis", 
@@ -261,6 +262,7 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
                     pool=10.0
                 )
             )
+            print(f"DEBUG - Inside Ingredient analysis API 2 {time.time() - start_time} sec")
             response.raise_for_status()
             return response.json()
     except httpx.TimeoutException as e:
@@ -323,7 +325,7 @@ async def analyze_product(product_info_from_db):
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
         print(f"DEBUG - Calling ingredient analysis API. Nutritional Analysis finished in {time.time() - start_time} seconds")
-        refs_all_ingredient_analysis_processing_level_json = await analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id)
+        refs_all_ingredient_analysis_processing_level_json = await analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time)
         print(f"DEBUG - Ingredient analysis finished in {time.time() - start_time} seconds")
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
