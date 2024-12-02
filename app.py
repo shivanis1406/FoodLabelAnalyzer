@@ -379,7 +379,7 @@ async def analyze_product(product_info_from_db):
         claims_analysis = claims_analysis_json["claims_analysis"] if claims_analysis_json else ""
 
         # Generate final analysis
-        final_analysis = generate_final_analysis(
+        final_analysis = await generate_final_analysis(
             brand_name, 
             product_name, 
             nutritional_level, 
