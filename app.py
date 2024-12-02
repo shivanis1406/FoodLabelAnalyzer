@@ -154,7 +154,7 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
                 json={"product_info_from_db": product_info_from_db},
                 timeout=httpx.Timeout(
                     connect=50.0,
-                    read=200.0,
+                    read=400.0,
                     write=10.0,
                     pool=10.0
                 ),
