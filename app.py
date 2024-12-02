@@ -302,7 +302,7 @@ def analyze_claims(product_info_from_db):
         return None 
             
     
-async def analyze_product(product_info_from_db):
+async def analyze_product_old(product_info_from_db):
     global assistant_p
     
     if product_info_from_db:
@@ -322,16 +322,19 @@ async def analyze_product(product_info_from_db):
         refs = []
 
         start_time = time.time()
+        #API 1
         nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
         nutritional_level = nutritional_level_json["nutrition_analysis"]
         print(f"DEBUG - Calling ingredient analysis API. Nutritional Analysis finished in {time.time() - start_time} seconds")
+        #API 2
         refs_all_ingredient_analysis_processing_level_json = await analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time)
         print(f"DEBUG - Ingredient analysis finished in {time.time() - start_time} seconds")
         refs = refs_all_ingredient_analysis_processing_level_json["refs"]
         all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
         processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
         
-        if len(claims_list) > 0:                    
+        if len(claims_list) > 0:
+            #API 3
             claims_analysis_json = analyze_claims(product_info_from_db)
             claims_analysis = claims_analysis_json["claims_analysis"]
             print(f"DEBUG - Claims analysis finished in {time.time() - start_time} seconds")
@@ -340,9 +343,46 @@ async def analyze_product(product_info_from_db):
         print(f"DEBUG - Cumulative analysis finished in {time.time() - start_time} seconds")
 
         return final_analysis
-    #else:
-    #    return "I'm sorry, product information could not be extracted from the url."    
+  
+async def analyze_product(product_info_from_db):
+    global assistant_p
+    
+    if product_info_from_db:
+        brand_name = product_info_from_db.get("brandName", "")
+        product_name = product_info_from_db.get("productName", "")
+        start_time = time.time()
 
+        # Parallel API calls using asyncio.gather()
+        results = await asyncio.gather(
+            analyze_nutrition_using_icmr_rda(product_info_from_db),
+            analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time),
+            analyze_claims(product_info_from_db) if product_info_from_db.get("claims") else asyncio.sleep(0)
+        )
+
+        # Unpack results
+        nutritional_level_json, refs_ingredient_analysis_json, claims_analysis_json = results
+
+        # Extract data from API results
+        nutritional_level = nutritional_level_json["nutrition_analysis"]
+        refs = refs_ingredient_analysis_json["refs"]
+        all_ingredient_analysis = refs_ingredient_analysis_json["all_ingredient_analysis"]
+        processing_level = refs_ingredient_analysis_json["processing_level"]
+        claims_analysis = claims_analysis_json["claims_analysis"] if claims_analysis_json else ""
+
+        # Generate final analysis
+        final_analysis = generate_final_analysis(
+            brand_name, 
+            product_name, 
+            nutritional_level, 
+            processing_level, 
+            all_ingredient_analysis, 
+            claims_analysis, 
+            refs
+        )
+
+        print(f"DEBUG - Cumulative analysis finished in {time.time() - start_time} seconds")
+        return final_analysis
+        
 # Streamlit app
 # Initialize session state
 if 'messages' not in st.session_state:
