@@ -300,49 +300,6 @@ async def analyze_claims(product_info_from_db):
     except (httpx.RequestError, httpx.HTTPStatusError) as e:
         print(f"API call error: {e}")
         return None 
-            
-    
-async def analyze_product_old(product_info_from_db):
-    global assistant_p
-    
-    if product_info_from_db:
-        brand_name = product_info_from_db.get("brandName", "")
-        product_name = product_info_from_db.get("productName", "")
-        ingredients_list = [ingredient["name"] for ingredient in product_info_from_db.get("ingredients", [])]
-        claims_list = product_info_from_db.get("claims", [])
-        nutritional_information = product_info_from_db['nutritionalInformation']
-        serving_size = product_info_from_db["servingSize"]["quantity"]
-
-        nutrient_analysis_rda = ""
-        nutrient_analysis = ""
-        nutritional_level = ""
-        processing_level = ""
-        all_ingredient_analysis = ""
-        claims_analysis = ""
-        refs = []
-
-        start_time = time.time()
-        #API 1
-        nutritional_level_json = await analyze_nutrition_using_icmr_rda(product_info_from_db)
-        nutritional_level = nutritional_level_json["nutrition_analysis"]
-        print(f"DEBUG - Calling ingredient analysis API. Nutritional Analysis finished in {time.time() - start_time} seconds")
-        #API 2
-        refs_all_ingredient_analysis_processing_level_json = await analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time)
-        print(f"DEBUG - Ingredient analysis finished in {time.time() - start_time} seconds")
-        refs = refs_all_ingredient_analysis_processing_level_json["refs"]
-        all_ingredient_analysis = refs_all_ingredient_analysis_processing_level_json["all_ingredient_analysis"]
-        processing_level = refs_all_ingredient_analysis_processing_level_json["processing_level"]
-        
-        if len(claims_list) > 0:
-            #API 3
-            claims_analysis_json = analyze_claims(product_info_from_db)
-            claims_analysis = claims_analysis_json["claims_analysis"]
-            print(f"DEBUG - Claims analysis finished in {time.time() - start_time} seconds")
-            
-        final_analysis = generate_final_analysis(brand_name, product_name, nutritional_level, processing_level, all_ingredient_analysis, claims_analysis, refs)
-        print(f"DEBUG - Cumulative analysis finished in {time.time() - start_time} seconds")
-
-        return final_analysis
   
 async def analyze_product(product_info_from_db):
     global assistant_p
