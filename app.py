@@ -185,7 +185,7 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
             print(f"Unexpected error in API call: {e}")
             raise
 
-def generate_final_analysis(
+async def generate_final_analysis(
     brand_name: str,
     product_name: str,
     nutritional_level: str,
@@ -197,12 +197,12 @@ def generate_final_analysis(
     print(f"Calling cumulative-analysis API with refs : {refs}")
     global render_host_url
     # Create a client with a longer timeout (120 seconds)
-    with httpx.Client() as client_api:
+    with httpx.AsyncClient() as client_api:
         try:
             # Convert the refs list to a JSON string
             print(f"sending refs to API for product {product_name} by {brand_name} - {refs}")
             
-            response = client_api.post(
+            response = await client_api.post(
                 f"{render_host_url}/cumulative_analysis/api/cumulative-analysis",
                 json={
                     "brand_name": brand_name,
