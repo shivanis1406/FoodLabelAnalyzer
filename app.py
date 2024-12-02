@@ -352,15 +352,23 @@ async def analyze_product(product_info_from_db):
         product_name = product_info_from_db.get("productName", "")
         start_time = time.time()
 
-        # Create coroutines list
-        coroutines = [
-            analyze_nutrition_using_icmr_rda(product_info_from_db),
-            analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time)
-        ]
+        # Verify each function is async and returns a coroutine
+        coroutines = []
+        
+        # Ensure each function is an async function and returns a coroutine
+        nutrition_coro = analyze_nutrition_using_icmr_rda(product_info_from_db)
+        processing_coro = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time)
+        
+        coroutines.append(nutrition_coro)
+        coroutines.append(processing_coro)
 
-        # Conditionally add claims analysis if claims exist
+        # Conditionally add claims analysis
         if product_info_from_db.get("claims"):
-            coroutines.append(analyze_claims(product_info_from_db))
+            claims_coro = analyze_claims(product_info_from_db)
+            coroutines.append(claims_coro)
+
+        # Debug: Print coroutine types to verify
+        print("Coroutines:", [type(coro) for coro in coroutines])
 
         # Parallel API calls
         results = await asyncio.gather(*coroutines)
