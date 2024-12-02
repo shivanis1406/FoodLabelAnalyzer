@@ -197,7 +197,7 @@ async def generate_final_analysis(
     print(f"Calling cumulative-analysis API with refs : {refs}")
     global render_host_url
     # Create a client with a longer timeout (120 seconds)
-    with httpx.AsyncClient() as client_api:
+    async with httpx.AsyncClient() as client_api:
         try:
             # Convert the refs list to a JSON string
             print(f"sending refs to API for product {product_name} by {brand_name} - {refs}")
@@ -280,7 +280,7 @@ async def analyze_claims(product_info_from_db):
     }
     
     try:
-        with httpx.AsyncClient() as client_api:
+        async with httpx.AsyncClient() as client_api:
             response = await client_api.post(
                 f"{render_host_url}/claims_analysis/api/claims-analysis", 
                 json=request_payload,
