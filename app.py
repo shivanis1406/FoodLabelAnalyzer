@@ -272,7 +272,7 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
             print(f"API call error: {e}")
             return None
 
-def analyze_claims(product_info_from_db):
+async def analyze_claims(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
     global render_host_url
     request_payload = {
@@ -280,8 +280,8 @@ def analyze_claims(product_info_from_db):
     }
     
     try:
-        with httpx.Client() as client_api:
-            response = client_api.post(
+        with httpx.AsyncClient() as client_api:
+            response = await client_api.post(
                 f"{render_host_url}/claims_analysis/api/claims-analysis", 
                 json=request_payload,
                 headers={
