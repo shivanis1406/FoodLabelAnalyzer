@@ -352,15 +352,24 @@ async def analyze_product(product_info_from_db):
         product_name = product_info_from_db.get("productName", "")
         start_time = time.time()
 
-        # Parallel API calls using asyncio.gather()
-        results = await asyncio.gather(
+        # Create coroutines list
+        coroutines = [
             analyze_nutrition_using_icmr_rda(product_info_from_db),
-            analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time),
-            analyze_claims(product_info_from_db) if product_info_from_db.get("claims") else asyncio.sleep(0)
-        )
+            analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time)
+        ]
 
-        # Unpack results
-        nutritional_level_json, refs_ingredient_analysis_json, claims_analysis_json = results
+        # Conditionally add claims analysis if claims exist
+        if product_info_from_db.get("claims"):
+            coroutines.append(analyze_claims(product_info_from_db))
+
+        # Parallel API calls
+        results = await asyncio.gather(*coroutines)
+
+        # Unpack results based on the number of coroutines
+        nutritional_level_json = results[0]
+        refs_ingredient_analysis_json = results[1]
+        claims_analysis_json = results[2] if len(results) > 2 else None
+        
 
         # Extract data from API results
         nutritional_level = nutritional_level_json["nutrition_analysis"]
