@@ -9,7 +9,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from pydantic import BaseModel  # Import BaseModel for creating request body
 from api.nutrient_analyzer import get_nutrient_analysis
 from api.data_extractor import extract_data, find_product, get_product
-from api.get_ingredient_analysis import get_ingredient_analysis
+from api.ingredients_analysis import get_ingredient_analysis
 from api.claims_analysis import get_claims_analysis
 #Used the @st.cache_resource decorator on this function. 
 #This Streamlit decorator ensures that the function is only executed once and its result (the OpenAI client) is cached. 
