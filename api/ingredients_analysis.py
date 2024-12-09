@@ -11,8 +11,6 @@ from openai import OpenAI
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import asyncio
 
-app = FastAPI()
-
 # Load the pre-trained model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
