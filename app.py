@@ -344,8 +344,23 @@ class ChatManager:
             #if "http:/" not in user_input and "https:/" not in user_input:
             if len(st.session_state.uploaded_files) == 0:
                 response, status = ChatManager._handle_product_name(user_input)
+                if "Please provide images of the product" in response:
+                    # Add a file uploader to allow users to upload multiple images
+                    uploaded_files = st.file_uploader(
+                            "Upload product images here:",
+                            type=["jpg", "jpeg", "png"],
+                            accept_multiple_files=True
+                        )
+                    
+                    if uploaded_files:
+                        st.session_state.messages.append(
+                            {"role": "user", "content": f"{len(uploaded_files)} images uploaded for analysis."}
+                        )
+                        with st.chat_message("user"):
+                            st.markdown(f"{len(uploaded_files)} images uploaded for analysis.")
+                        st.session_state.uploaded_files = uploaded_files
             else:
-                response, status = ChatManager._handle_product_url(user_input)
+                response, status = ChatManager._handle_product_url()
                 
         return response, status
 
@@ -363,10 +378,10 @@ class ChatManager:
             st.session_state.awaiting_selection = True
             return "Here are some similar products from our database. Please select:", "no success"
             
-        return "Product not found in our database. Please provide the image URL of the product.", "no success"
+        return "Product not found in our database. Please provide images of the product.", "no success"
 
     @staticmethod
-    def _handle_product_url(user_input):
+    def _handle_product_url():
         #is_valid_url = (".jpeg" in user_input or ".jpg" in user_input) and \
         #               ("http:/" in user_input or "https:/" in user_input)
         image_len = len(st.session_state.uploaded_files)
