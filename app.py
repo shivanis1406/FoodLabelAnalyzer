@@ -144,6 +144,7 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
     }
     
     raw_response = await get_ingredient_analysis(request_payload)
+    print("Processing and Ingredient analysis finished!")
     return raw_response
 
 def analyze_claims_list(product_info_from_db):
