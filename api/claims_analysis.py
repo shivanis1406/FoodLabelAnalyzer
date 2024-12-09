@@ -131,5 +131,6 @@ def get_claims_analysis(product_info_from_db):
             assistant_c = create_assistant(client)
             #Create embeddings
             claims_analysis = analyze_claims(claims_list, ingredients_list, assistant_c.id, client) if claims_list else ""
-
+            print(f"Returning claims_analysis : {claims_analysis}")
+            
         return {'claims_analysis' : claims_analysis}
