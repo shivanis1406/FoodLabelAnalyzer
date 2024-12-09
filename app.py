@@ -75,7 +75,7 @@ async def get_product_list(product_name_by_user):
     raw_response = await find_product(product_name_by_user)
     return raw_response
 
-async def get_product(product_name):
+async def get_product_info(product_name):
     product = await get_product(product_name)
     return product
 
@@ -286,7 +286,7 @@ async def chatbot_response(image_urls_str, product_name_by_user, extract_info = 
             with st.spinner("Analyzing product using data from 3,000+ peer-reviewed journal papers..."):
                 st.caption("This may take a few minutes")
                 
-                product_info_raw = await get_product(product_name_by_user)
+                product_info_raw = await get_product_info(product_name_by_user)
                 print(f"DEBUG product_info_raw from name: {type(product_info_raw)} {product_info_raw}")
                 if not product_info_raw:
                     return [], "product not found because product information in the db is corrupt"
