@@ -1,7 +1,6 @@
 import streamlit as st
 from openai import OpenAI
 import json, os, httpx, asyncio
-import nest_asyncio
 import requests, time
 from typing import Dict, Any
 import pickle
@@ -68,17 +67,17 @@ def create_assistant_and_embeddings():
     
 assistant_p = create_assistant_and_embeddings()
 
-async def extract_data_from_product_image(image_links):
-    raw_response = await extract_data({"image_links" : image_links})
+def extract_data_from_product_image(image_links):
+    raw_response = extract_data({"image_links" : image_links})
     return raw_response 
             
-async def get_product_list(product_name_by_user):
-    raw_response = await find_product(product_name_by_user)
+def get_product_list(product_name_by_user):
+    raw_response = find_product(product_name_by_user)
     return raw_response
 
-async def get_product_info(product_name):
+def get_product_info(product_name):
     print(f"getting product info from mongodb for {product_name}")
-    product_info = await get_product(product_name)
+    product_info = get_product(product_name)
     return product_info
 
 # Define a sample request body that matches NutrientAnalysisRequest
@@ -266,14 +265,14 @@ async def analyze_product(product_info_from_db):
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 
-async def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
+def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
     # Process the user input and generate a response
     processing_level = ""
     harmful_ingredient_analysis = ""
     claims_analysis = ""
     image_urls = []
     if product_name_by_user != "":
-        similar_product_list_json = await get_product_list(product_name_by_user)
+        similar_product_list_json = asyncio.run(get_product_list(product_name_by_user))
         
         if similar_product_list_json and extract_info == False:
             with st.spinner("Fetching product information from our database... This may take a moment."):
@@ -288,12 +287,12 @@ async def chatbot_response(image_urls_str, product_name_by_user, extract_info = 
             with st.spinner("Analyzing product using data from 3,000+ peer-reviewed journal papers..."):
                 st.caption("This may take a few minutes")
                 
-                product_info_raw = await get_product_info(product_name_by_user)
+                product_info_raw = asyncio.run(get_product_info(product_name_by_user))
                 print(f"DEBUG product_info_raw from name: {type(product_info_raw)} {product_info_raw}")
                 if not product_info_raw:
                     return [], "product not found because product information in the db is corrupt"
                 if 'error' not in product_info_raw.keys():
-                    final_analysis = await analyze_product(product_info_raw)
+                    final_analysis = asyncio.run(analyze_product(product_info_raw))
                     return [], final_analysis
                 else:
                     return [], f"Product information could not be extracted from our database because of {product_info_raw['error']}"
@@ -311,10 +310,10 @@ async def chatbot_response(image_urls_str, product_name_by_user, extract_info = 
                     image_urls.append(url)
 
         with st.spinner("Analyzing the product... This may take a moment."):
-            product_info_raw = await extract_data_from_product_image(image_urls)
+            product_info_raw = asyncio.run(extract_data_from_product_image(image_urls))
             print(f"DEBUG product_info_raw from image : {product_info_raw}")
             if 'error' not in product_info_raw.keys():
-                final_analysis = await analyze_product(product_info_raw)
+                final_analysis = asyncio.run(analyze_product(product_info_raw))
                 return [], final_analysis
             else:
                 return [], f"Product information could not be extracted from the image because of {json.loads(product_info_raw)['error']}"
@@ -348,7 +347,7 @@ class SessionState:
 class ProductSelector:
     """Handles product selection logic"""
     @staticmethod
-    async def handle_selection():
+    def handle_selection():
         if st.session_state.similar_products:
             # Create a container for the selection UI
             selection_container = st.container()
@@ -373,7 +372,7 @@ class ProductSelector:
                         #st.session_state.selected_product = choice
                         st.session_state.messages.append({"role": "assistant", "content": f"You selected {choice}"})
                         print(f"Selection made by user : {choice}")
-                        _, msg = await chatbot_response("", choice.split(" by ")[0], extract_info=True)
+                        _, msg = chatbot_response("", choice.split(" by ")[0], extract_info=True)
                         print(f"msg is {msg}")
                         #Check if analysis couldn't be done because db had incomplete information
                         if msg != "product not found because product information in the db is corrupt":
@@ -409,20 +408,20 @@ class ProductSelector:
 class ChatManager:
     """Manages chat interactions and responses"""
     @staticmethod
-    async def process_response(user_input):
+    def process_response(user_input):
         if not st.session_state.product_selected:
             if "http:/" not in user_input and "https:/" not in user_input:
-                response, status = await ChatManager._handle_product_name(user_input)
+                response, status = ChatManager._handle_product_name(user_input)
             else:
-                response, status = await ChatManager._handle_product_url(user_input)
+                response, status = ChatManager._handle_product_url(user_input)
                 
         return response, status
 
     @staticmethod
-    async def _handle_product_name(user_input):
+    def _handle_product_name(user_input):
         st.session_state.product_shared = True
         st.session_state.current_user_input = user_input
-        similar_products, _ = await chatbot_response(
+        similar_products, _ = chatbot_response(
             "", user_input, extract_info=False
         )
         
@@ -435,7 +434,7 @@ class ChatManager:
         return "Product not found in our database. Please provide the image URL of the product.", "no success"
 
     @staticmethod
-    async def _handle_product_url(user_input):
+    def _handle_product_url(user_input):
         is_valid_url = (".jpeg" in user_input or ".jpg" in user_input) and \
                        ("http:/" in user_input or "https:/" in user_input)
         
@@ -443,7 +442,7 @@ class ChatManager:
             return "Please provide the product name first"
         
         if is_valid_url and st.session_state.product_shared:
-            _, msg = await chatbot_response(
+            _, msg = chatbot_response(
                 user_input, "", extract_info=True
             )
             st.session_state.product_selected = True
@@ -461,7 +460,7 @@ class ChatManager:
                 
         return "Please provide valid image URL of the product.", "no success"
 
-async def main():
+def main():
     # Initialize session state
     SessionState.initialize()
     
@@ -485,7 +484,7 @@ async def main():
     selection_in_progress = False
     if st.session_state.awaiting_selection:
         print("Awaiting selection")
-        selection_in_progress = await ProductSelector.handle_selection()
+        selection_in_progress = ProductSelector.handle_selection()
     
     # Only show chat input if not awaiting selection
     if not selection_in_progress:
@@ -497,7 +496,7 @@ async def main():
                 st.markdown(user_input)
             
             # Process response
-            response, status = await ChatManager.process_response(user_input)
+            response, status = ChatManager.process_response(user_input)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
@@ -524,39 +523,11 @@ async def main():
     if st.button("Clear Chat History"):
         st.session_state.clear()
         st.rerun()
-
-# Ensure nest_asyncio is applied early
-nest_asyncio.apply()
-
-def run_async(coro):
-    """
-    Safely run an async coroutine in Streamlit
-    """
-    try:
-        # Get the current event loop or create a new one
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        # If no event loop exists, create a new one
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-    try:
-        # Run the coroutine and return its result
-        return loop.run_until_complete(coro)
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-        raise
-    finally:
-        # Attempt to close the loop if it's not already closed
-        try:
-            loop.close()
-        except Exception:
-            pass
             
 # Create a wrapper function to run the async main
-def run_main():
-    run_async(main())
+# def run_main():
+#    run_async(main())
 
 # Call the wrapper function in Streamlit
 if __name__ == "__main__":
-    run_main()
+    main()
