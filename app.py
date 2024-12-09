@@ -64,8 +64,8 @@ def create_assistant_and_embeddings():
     
 assistant_p = create_assistant_and_embeddings()
 
-def extract_data_from_product_image(image_links):
-    raw_response = extract_data({"image_links" : image_links})
+def extract_data_from_product_image(images_list):
+    raw_response = extract_data({"images_list" : images_list})
     return raw_response 
             
 def get_product_list(product_name_by_user):
@@ -177,8 +177,10 @@ async def analyze_product(product_info_from_db):
 # Initialize session state
 if 'messages' not in st.session_state:
     st.session_state.messages = []
+if 'uploaded_files' not in st.session_state:
+    st.session_state.uploaded_files = []
 
-def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
+def chatbot_response(images_list, product_name_by_user, extract_info = True):
     # Process the user input and generate a response
     processing_level = ""
     harmful_ingredient_analysis = ""
@@ -213,17 +215,18 @@ def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
         else:
             return [], "Product not found in our database."
                 
-    elif "http:/" in image_urls_str.lower() or "https:/" in image_urls_str.lower():
+    #elif "http:/" in image_urls_str.lower() or "https:/" in image_urls_str.lower()
+    elif len(images_list) > 1:
         # Extract image URL from user input
-        if "," not in image_urls_str:
-            image_urls.append(image_urls_str)
-        else:
-            for url in image_urls_str.split(","):
-                if "http:/" in url.lower() or "https:/" in url.lower():
-                    image_urls.append(url)
+        #if "," not in image_urls_str:
+        #    image_urls.append(image_urls_str)
+        #else:
+        #    for url in image_urls_str.split(","):
+        #        if "http:/" in url.lower() or "https:/" in url.lower():
+        #            image_urls.append(url)
 
         with st.spinner("Analyzing the product... This may take a moment."):
-            product_info_raw = extract_data_from_product_image(image_urls)
+            product_info_raw = extract_data_from_product_image(images_list)
             print(f"DEBUG product_info_raw from image : {product_info_raw}")
             if 'error' not in product_info_raw.keys():
                 final_analysis = asyncio.run(analyze_product(product_info_raw))
@@ -241,6 +244,7 @@ class SessionState:
     def initialize():
         initial_states = {
             "messages": [],
+            "uploaded_files": [],
             "product_selected": False,
             "product_shared": False,
             "analyze_more": True,
@@ -285,7 +289,7 @@ class ProductSelector:
                         #st.session_state.selected_product = choice
                         st.session_state.messages.append({"role": "assistant", "content": f"You selected {choice}"})
                         print(f"Selection made by user : {choice}")
-                        _, msg = chatbot_response("", choice.split(" by ")[0], extract_info=True)
+                        _, msg = chatbot_response([], choice.split(" by ")[0], extract_info=True)
                         print(f"msg is {msg}")
                         #Check if analysis couldn't be done because db had incomplete information
                         if msg != "product not found because product information in the db is corrupt":
@@ -324,7 +328,7 @@ class ProductSelector:
                             )
                             with st.chat_message("user"):
                                 st.markdown(f"{len(uploaded_files)} images uploaded for analysis.")
-                            #call image quality check inside data_extractor
+                            st.session_state.uploaded_files = uploaded_files
                             st.rerun()
                 
                 # Prevent further chat input while awaiting selection
@@ -337,7 +341,8 @@ class ChatManager:
     @staticmethod
     def process_response(user_input):
         if not st.session_state.product_selected:
-            if "http:/" not in user_input and "https:/" not in user_input:
+            #if "http:/" not in user_input and "https:/" not in user_input:
+            if len(st.session_state.uploaded_files) == 0:
                 response, status = ChatManager._handle_product_name(user_input)
             else:
                 response, status = ChatManager._handle_product_url(user_input)
@@ -349,7 +354,7 @@ class ChatManager:
         st.session_state.product_shared = True
         st.session_state.current_user_input = user_input
         similar_products, _ = chatbot_response(
-            "", user_input, extract_info=False
+            [], user_input, extract_info=False
         )
         
         
@@ -362,15 +367,15 @@ class ChatManager:
 
     @staticmethod
     def _handle_product_url(user_input):
-        is_valid_url = (".jpeg" in user_input or ".jpg" in user_input) and \
-                       ("http:/" in user_input or "https:/" in user_input)
-        
+        #is_valid_url = (".jpeg" in user_input or ".jpg" in user_input) and \
+        #               ("http:/" in user_input or "https:/" in user_input)
+        image_len = len(st.session_state.uploaded_files)
         if not st.session_state.product_shared:
             return "Please provide the product name first"
         
-        if is_valid_url and st.session_state.product_shared:
+        if image_len > 1 and st.session_state.product_shared:
             _, msg = chatbot_response(
-                user_input, "", extract_info=True
+                st.session_state.uploaded_files, "", extract_info=True
             )
             st.session_state.product_selected = True
             if msg != "product not found because image is not clear" and "Product information could not be extracted from the image" not in msg:
@@ -385,7 +390,8 @@ class ChatManager:
                 
             return response, status
                 
-        return "Please provide valid image URL of the product.", "no success"
+        #return "Please provide valid image URL of the product.", "no success"
+        return "Please provide more than 1 images of the product to capture complete information.", "no success"
 
 def main():
     # Initialize session state
@@ -431,7 +437,7 @@ def main():
                     
             if status == "success":               
                 SessionState.initialize()  # Reset states for next product
-                #st.session_state.welcome_msg = "What is the next product you would like me to analyze today?"
+
                 keys_to_keep = ["messages", "welcome_msg"]
                 keys_to_delete = [key for key in st.session_state.keys() if key not in keys_to_keep]
                     
@@ -450,10 +456,6 @@ def main():
     if st.button("Clear Chat History"):
         st.session_state.clear()
         st.rerun()
-            
-# Create a wrapper function to run the async main
-# def run_main():
-#    run_async(main())
 
 # Call the wrapper function in Streamlit
 if __name__ == "__main__":
