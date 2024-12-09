@@ -69,7 +69,7 @@ def create_assistant_and_embeddings():
 assistant_p = create_assistant_and_embeddings()
 
 async def extract_data_from_product_image(image_links):
-    raw_response = await extract_data(image_links_json: Dict[str, List[str]])
+    raw_response = await extract_data({"image_links" : image_links})
     return raw_response 
             
 async def get_product_list(product_name_by_user):
