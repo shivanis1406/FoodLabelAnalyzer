@@ -1,13 +1,11 @@
 # api/index.py
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 import os
 import json
 import re
 from typing import List, Dict, Any
-
-app = FastAPI()
 
 # Move configuration and constants to separate files
 from .config import MONGODB_URL, OPENAI_API_KEY
@@ -56,7 +54,6 @@ Your goal will be to extract information from these images to populate the schem
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error extracting information: {str(e)}")
 
-@app.post("/api/extract-data")
 async def extract_data(image_links_json: Dict[str, List[str]]):
     if not image_links_json or "image_links" not in image_links_json:
         raise HTTPException(status_code=400, detail="Image links not found")
@@ -94,7 +91,6 @@ async def find_product(product_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/get-product")
 async def get_product(product_name: str):
     if not product_name:
         raise HTTPException(status_code=400, detail="Please provide a valid product name")
