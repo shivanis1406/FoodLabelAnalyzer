@@ -85,7 +85,7 @@ class NutrientAnalysisRequest(BaseModel):
     product_info_from_db: dict
     
 async def analyze_nutrition_using_icmr_rda(product_info_from_db):
-    raw_response = await get_nutrient_analysis(NutrientAnalysisRequest(product_info_from_db))
+    raw_response = await get_nutrient_analysis(NutrientAnalysisRequest(product_info_from_db=product_info_from_db))
     return raw_response
 
 async def generate_final_analysis(
