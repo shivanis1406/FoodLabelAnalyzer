@@ -430,6 +430,7 @@ async def get_ingredient_analysis(payload):
             print(f"DEBUG = processing level is {processing_level}")
             
             default_assistant = create_default_assistant(client)
+            print(f"Calling async_process_ingredients func of type {type(async_process_ingredients)}")
             
             refs, all_ingredient_analysis = await async_process_ingredients(ingredients_list, client, embeddings_titles_list, default_assistant)
 
