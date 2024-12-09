@@ -67,9 +67,6 @@ async def extract_data(image_links_json: Dict[str, List[str]]):
 
 async def find_product(product_name: str):
 
-    print(f"MONGODB_URL is {MONGODB_URL}")
-    print(f"collection is {collection}")
-
     if not product_name:
         raise Exception("Please provide a valid product name")
     
