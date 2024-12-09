@@ -302,7 +302,8 @@ class ProductSelector:
                             for key in keys_to_delete:
                                 del st.session_state[key]
                             st.session_state.welcome_msg = "What product would you like me to analyze next?"
-                            
+                        st.rerun()
+                        
                     if choice == "None of the above" or msg == "product not found because product information in the db is corrupt":
                         st.session_state.messages.append(
                             {"role": "assistant", "content": "Please provide the images of the product to analyze based on the latest information."}
@@ -324,7 +325,7 @@ class ProductSelector:
                             with st.chat_message("user"):
                                 st.markdown(f"{len(uploaded_files)} images uploaded for analysis.")
                             #call image quality check inside data_extractor
-                    st.rerun()
+                            st.rerun()
                 
                 # Prevent further chat input while awaiting selection
                 return True  # Indicates selection is in progress
