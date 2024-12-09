@@ -5,7 +5,7 @@ from .calc_consumption_context import get_consumption_context
     
 def generate_final_analysis(request):
     if not request.get('brand_name') or not request.get('product_name'):
-        raise HTTPException(status_code=400, detail="Please provide a valid product list")
+        raise Exception("Please provide a valid product list")
     
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
