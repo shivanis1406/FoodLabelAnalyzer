@@ -305,12 +305,25 @@ class ProductSelector:
                             
                     if choice == "None of the above" or msg == "product not found because product information in the db is corrupt":
                         st.session_state.messages.append(
-                            {"role": "assistant", "content": "Please provide the image URL of the product to analyze based on the latest information."}
+                            {"role": "assistant", "content": "Please provide the images of the product to analyze based on the latest information."}
                         )
                         with st.chat_message("assistant"):
-                            st.markdown("Please provide the image URL of the product to analyze based on the latest information.")
+                            st.markdown("Please provide the images of the product to analyze based on the latest information.")
                         #st.session_state.selected_product = None
-                        
+                        # Add a file uploader to allow users to upload multiple images
+                        uploaded_files = st.file_uploader(
+                            "Upload product images here:",
+                            type=["jpg", "jpeg", "png"],
+                            accept_multiple_files=True
+                        )
+                    
+                        if uploaded_files:
+                            st.session_state.messages.append(
+                                {"role": "user", "content": f"{len(uploaded_files)} images uploaded for analysis."}
+                            )
+                            with st.chat_message("user"):
+                                st.markdown(f"{len(uploaded_files)} images uploaded for analysis.")
+                            #call image quality check inside data_extractor
                     st.rerun()
                 
                 # Prevent further chat input while awaiting selection
