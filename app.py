@@ -525,11 +525,37 @@ async def main():
         st.session_state.clear()
         st.rerun()
 
+# Ensure nest_asyncio is applied early
+nest_asyncio.apply()
+
+def run_async(coro):
+    """
+    Safely run an async coroutine in Streamlit
+    """
+    try:
+        # Get the current event loop or create a new one
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        # If no event loop exists, create a new one
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    try:
+        # Run the coroutine and return its result
+        return loop.run_until_complete(coro)
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+        raise
+    finally:
+        # Attempt to close the loop if it's not already closed
+        try:
+            loop.close()
+        except Exception:
+            pass
+            
 # Create a wrapper function to run the async main
 def run_main():
-    # Apply nest_asyncio patch to allow nested event loops
-    nest_asyncio.apply()
-    asyncio.run(main())
+    run_async(main())
 
 # Call the wrapper function in Streamlit
 if __name__ == "__main__":
