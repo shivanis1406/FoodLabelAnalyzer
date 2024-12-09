@@ -374,7 +374,8 @@ class ChatManager:
             st.session_state.uploaded_files = uploaded_files
             return f"{len(uploaded_files)} images uploaded for analysis.", "no success"
                         
-        return "Product not found in our database. Please provide images of the product.", "no success"
+        #return "Product not found in our database. Please provide images of the product.", "no success"
+        return "Please provide images of the product.", "no success"
 
     @staticmethod
     def _handle_product_url():
