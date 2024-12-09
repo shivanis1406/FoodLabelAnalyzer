@@ -15,9 +15,12 @@ from .schemas import label_reader_schema
 
 # Initialize clients
 openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+print(f"MONGODB_URL is {MONGODB_URL}")
 mongodb_client = AsyncIOMotorClient(MONGODB_URL)
 db = mongodb_client.consumeWise
 collection = db.products
+print(f"collection is {collection}")
+
 
 async def extract_information(image_links: List[str]) -> Dict[str, Any]:
     global openai_client
