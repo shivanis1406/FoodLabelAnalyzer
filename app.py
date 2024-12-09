@@ -2,15 +2,14 @@ import streamlit as st
 from openai import OpenAI
 import json, os, httpx, asyncio
 import requests, time
-#from data_extractor import extract_data
-#from rda import find_nutrition
 from typing import Dict, Any
-#from calc_cosine_similarity import  find_relevant_file_paths
 import pickle
 from calc_consumption_context import get_consumption_context
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
-
+from pydantic import BaseModel  # Import BaseModel for creating request body
+from api.nutrient_analyzer import get_nutrient_analysis
+from api.data_extractor import extract_data, find_product, get_product
 #Used the @st.cache_resource decorator on this function. 
 #This Streamlit decorator ensures that the function is only executed once and its result (the OpenAI client) is cached. 
 #Subsequent calls to this function will return the cached client, avoiding unnecessary recreation.
@@ -27,7 +26,6 @@ def get_openai_client():
 #    return data_extractor_url
 
 client = get_openai_client()
-render_host_url = "https://foodlabelanalyzer-api-2.onrender.com"
 
 @st.cache_resource
 def create_assistant_and_embeddings():
@@ -81,47 +79,14 @@ async def get_product_list(product_name_by_user):
 async def get_product(product_name):
     product = await get_product(product_name)
     return product
+
+# Define a sample request body that matches NutrientAnalysisRequest
+class NutrientAnalysisRequest(BaseModel):
+    product_info_from_db: dict
     
 async def analyze_nutrition_using_icmr_rda(product_info_from_db):
-    global render_host_url
-    print(f"Calling analyze_nutrition_icmr_rda api - product_info_from_db : {type(product_info_from_db)}")
-    async with httpx.AsyncClient() as client_api:
-        try:
-            response = await client_api.post(
-                f"{render_host_url}/nutrient_analyzer/api/nutrient-analysis", 
-                json={"product_info_from_db": product_info_from_db},
-                timeout=httpx.Timeout(
-                    connect=50.0,
-                    read=400.0,
-                    write=10.0,
-                    pool=10.0
-                ),
-                headers={
-                    "Content-Type": "application/json"
-                }
-            )
-            response.raise_for_status()
-            # Add more detailed logging
-            response_json = response.json()
-            print(f"Full response JSON: {response_json}")
-            
-            # Validate response structure
-            if not response_json:
-                print("Received empty JSON response")
-                return None
-            
-            return response_json
-        except httpx.TimeoutException as e:
-            print(f"Timeout error: {e}")
-            raise  # Re-raise to propagate the error
-        
-        except httpx.RequestError as e:
-            print(f"Request error: {e}")
-            raise  # Re-raise to propagate the error
-        
-        except Exception as e:
-            print(f"Unexpected error in API call: {e}")
-            raise
+    raw_response = await get_nutrient_analysis(NutrientAnalysisRequest=product_info_from_db)
+    return raw_response
 
 async def generate_final_analysis(
     brand_name: str,
