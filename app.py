@@ -68,16 +68,16 @@ def create_assistant_and_embeddings():
 assistant_p = create_assistant_and_embeddings()
 
 def extract_data_from_product_image(image_links):
-    raw_response = extract_data({"image_links" : image_links})
+    raw_response = asyncio.run(extract_data({"image_links" : image_links}))
     return raw_response 
             
 def get_product_list(product_name_by_user):
-    raw_response = find_product(product_name_by_user)
+    raw_response = asyncio.run(find_product(product_name_by_user))
     return raw_response
 
 def get_product_info(product_name):
     print(f"getting product info from mongodb for {product_name}")
-    product_info = get_product(product_name)
+    product_info = asyncio.run(get_product(product_name))
     return product_info
 
 # Define a sample request body that matches NutrientAnalysisRequest
@@ -272,7 +272,7 @@ def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
     claims_analysis = ""
     image_urls = []
     if product_name_by_user != "":
-        similar_product_list_json = asyncio.run(get_product_list(product_name_by_user))
+        similar_product_list_json = get_product_list(product_name_by_user)
         
         if similar_product_list_json and extract_info == False:
             with st.spinner("Fetching product information from our database... This may take a moment."):
@@ -287,7 +287,7 @@ def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
             with st.spinner("Analyzing product using data from 3,000+ peer-reviewed journal papers..."):
                 st.caption("This may take a few minutes")
                 
-                product_info_raw = asyncio.run(get_product_info(product_name_by_user))
+                product_info_raw = get_product_info(product_name_by_user)
                 print(f"DEBUG product_info_raw from name: {type(product_info_raw)} {product_info_raw}")
                 if not product_info_raw:
                     return [], "product not found because product information in the db is corrupt"
@@ -310,7 +310,7 @@ def chatbot_response(image_urls_str, product_name_by_user, extract_info = True):
                     image_urls.append(url)
 
         with st.spinner("Analyzing the product... This may take a moment."):
-            product_info_raw = asyncio.run(extract_data_from_product_image(image_urls))
+            product_info_raw = extract_data_from_product_image(image_urls)
             print(f"DEBUG product_info_raw from image : {product_info_raw}")
             if 'error' not in product_info_raw.keys():
                 final_analysis = asyncio.run(analyze_product(product_info_raw))
