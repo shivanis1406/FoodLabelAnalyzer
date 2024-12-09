@@ -82,7 +82,7 @@ async def find_product(product_name: str):
             query = {"productName": {"$regex": f".*{re.escape(term)}.*", "$options": "i"}}
             # Use .to_list() to fetch all results
             products = await collection.find(query).to_list(length=None)
-            #async for product in collection.find(query):
+            #async for product in collection.find(query)
             for product in products:
                 brand_product_name = f"{product['productName']} by {product['brandName']}"
                 product_list.add(brand_product_name)
