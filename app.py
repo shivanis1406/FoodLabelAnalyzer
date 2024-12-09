@@ -146,9 +146,9 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
     raw_response = await get_ingredient_analysis(request_payload)
     return raw_response
 
-async def analyze_claims(product_info_from_db):
+def analyze_claims(product_info_from_db):
     print("calling processing level and ingredient_analysis func")
-    raw_response = await get_claims_analysis(product_info_from_db)
+    raw_response = get_claims_analysis(product_info_from_db)
     return raw_response
   
 async def analyze_product(product_info_from_db):
@@ -170,8 +170,9 @@ async def analyze_product(product_info_from_db):
         coroutines.append(processing_coro)
 
         # Conditionally add claims analysis
+        # You can use asyncio.to_thread() to run the synchronous analyze_claims function in a separate thread, allowing it to run in parallel with your other asynchronous functions. Here’s how you can do it:
         if product_info_from_db.get("claims"):
-            claims_coro = analyze_claims(product_info_from_db)
+            claims_coro = asyncio.to_thread(analyze_claims(product_info_from_db))
             coroutines.append(claims_coro)
 
         # Debug: Print coroutine types to verify
