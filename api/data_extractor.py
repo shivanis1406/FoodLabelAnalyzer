@@ -51,11 +51,11 @@ Your goal will be to extract information from these images to populate the schem
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        raise Exception(status_code=500, detail=f"Error extracting information: {str(e)}")
+        raise Exception(f"Error extracting information: {str(e)}")
 
 async def extract_data(image_links_json: Dict[str, List[str]]):
     if not image_links_json or "image_links" not in image_links_json:
-        raise Exception(status_code=400, detail="Image links not found")
+        raise Exception("Image links not found")
     
     try:
         extracted_data = await extract_information(image_links_json["image_links"])
@@ -63,7 +63,7 @@ async def extract_data(image_links_json: Dict[str, List[str]]):
         extracted_data["_id"] = str(result.inserted_id)
         return extracted_data
     except Exception as e:
-        raise Exception(status_code=500, detail=str(e))
+        raise Exception(str(e))
 
 async def find_product(product_name: str):
 
@@ -71,7 +71,7 @@ async def find_product(product_name: str):
     print(f"collection is {collection}")
 
     if not product_name:
-        raise Exception(status_code=400, detail="Please provide a valid product name")
+        raise Exception("Please provide a valid product name")
     
     try:
         words = product_name.split()
@@ -92,18 +92,18 @@ async def find_product(product_name: str):
             "message": "Products found" if product_list else "No products found"
         }
     except Exception as e:
-        raise Exception(status_code=500, detail=str(e))
+        raise Exception(str(e))
 
 async def get_product(product_name: str):
     if not product_name:
-        raise Exception(status_code=400, detail="Please provide a valid product name")
+        raise Exception("Please provide a valid product name")
     
     try:
         product = await collection.find_one({"productName": product_name})
         if not product:
-            raise Exception(status_code=404, detail="Product not found")
+            raise Exception("Product not found")
         
         product["_id"] = str(product["_id"])
         return product
     except Exception as e:
-        raise Exception(status_code=500, detail=str(e))
+        raise Exception(str(e))
