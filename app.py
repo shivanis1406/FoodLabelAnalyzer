@@ -254,7 +254,8 @@ class SessionState:
             "similar_products": [],
             "awaiting_selection": False,
             "current_user_input": "",
-            "selected_product": None
+            "selected_product": None,
+            "awaiting_image_upload": False
         }
         
         for key, value in initial_states.items():
@@ -367,17 +368,25 @@ class ChatManager:
         with st.chat_message("assistant"):
             st.markdown(f"Please provide images of the product since {len(similar_products)} similar products found in our database")
         # Add a file uploader to allow users to upload multiple images
-        uploaded_files = st.file_uploader(
-                "Upload product images here:",
-                type=["jpg", "jpeg", "png"],
-                accept_multiple_files=True
-            )
-                    
-        if uploaded_files:
-            st.session_state.uploaded_files = uploaded_files
-            return f"{len(uploaded_files)} images uploaded for analysis.", "no success"
+        # No similar products found
+        st.session_state.awaiting_image_upload = True
+    
+        # Only show message and uploader if waiting for image upload
+        if st.session_state.awaiting_image_upload:
+            st.write(f"Please provide images of the product since {len(st.session_state.similar_products)} similar products found in our database")
+        
+            uploaded_files = st.file_uploader(
+                    "Upload product images here:",
+                    type=["jpg", "jpeg", "png"],
+                    accept_multiple_files=True
+                )
                         
-        return "Waiting for images!", "no success"
+            if uploaded_files:
+                st.session_state.uploaded_files = uploaded_files
+                st.session_state.awaiting_image_upload = False
+                return f"{len(uploaded_files)} images uploaded for analysis.", "no success"
+            else:          
+                return "Waiting for images!", "no success"
 
     @staticmethod
     def _handle_product_url():
