@@ -67,6 +67,10 @@ async def extract_data(image_links_json: Dict[str, List[str]]):
         raise HTTPException(status_code=500, detail=str(e))
 
 async def find_product(product_name: str):
+
+    print(f"MONGODB_URL is {MONGODB_URL}")
+    print(f"collection is {collection}")
+
     if not product_name:
         raise HTTPException(status_code=400, detail="Please provide a valid product name")
     
