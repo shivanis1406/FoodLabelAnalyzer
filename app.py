@@ -5,7 +5,6 @@ import requests, time
 from typing import Dict, Any
 import pickle
 from api.calc_consumption_context import get_consumption_context
-import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 from pydantic import BaseModel  # Import BaseModel for creating request body
 from api.nutrient_analyzer import get_nutrient_analysis
