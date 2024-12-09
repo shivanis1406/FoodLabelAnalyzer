@@ -1,17 +1,9 @@
-import logging
-import traceback
 import sys
-from functools import wraps
 import os
 import json
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any
 import torch
-from pydantic import BaseModel
 from openai import OpenAI
-
-app = FastAPI()
 
 def create_assistant(client):
     assistant3 = client.beta.assistants.create(
