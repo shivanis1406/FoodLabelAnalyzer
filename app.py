@@ -362,7 +362,8 @@ class ProductSelector:
                 
                 # Confirm button
                 confirm_clicked = st.button("Confirm Selection")
-                
+                print(f"Is Selection made by user ? : {confirm_clicked}")
+
                 # Only process the selection when confirm is clicked
                 msg = ""
                 if confirm_clicked:
@@ -370,6 +371,7 @@ class ProductSelector:
                     if choice != "None of the above":
                         #st.session_state.selected_product = choice
                         st.session_state.messages.append({"role": "assistant", "content": f"You selected {choice}"})
+                        print(f"Selection made by user : {choice}")
                         _, msg = await chatbot_response("", choice.split(" by ")[0], extract_info=True)
                         print(f"msg is {msg}")
                         #Check if analysis couldn't be done because db had incomplete information
@@ -481,6 +483,7 @@ async def main():
     # Handle product selection if awaiting
     selection_in_progress = False
     if st.session_state.awaiting_selection:
+        print("Awaiting selection")
         selection_in_progress = await ProductSelector.handle_selection()
     
     # Only show chat input if not awaiting selection
