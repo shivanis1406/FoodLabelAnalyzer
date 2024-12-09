@@ -173,7 +173,7 @@ async def analyze_product(product_info_from_db):
         # Conditionally add claims analysis
         # You can use asyncio.to_thread() to run the synchronous analyze_claims function in a separate thread, allowing it to run in parallel with your other asynchronous functions. Here’s how you can do it:
         if product_info_from_db.get("claims"):
-            claims_coro = asyncio.to_thread(analyze_claims_list(product_info_from_db))
+            claims_coro = asyncio.to_thread(analyze_claims_list, product_info_from_db)
             coroutines.append(claims_coro)
 
         # Debug: Print coroutine types to verify
