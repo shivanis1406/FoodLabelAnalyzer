@@ -145,33 +145,9 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
     return raw_response
 
 async def analyze_claims(product_info_from_db):
-    print("calling processing level and ingredient_analysis api")
-    global render_host_url
-    request_payload = {
-        "product_info_from_db": product_info_from_db
-    }
-    
-    try:
-        async with httpx.AsyncClient() as client_api:
-            response = await client_api.post(
-                f"{render_host_url}/claims_analysis/api/claims-analysis", 
-                json=request_payload,
-                headers={
-                    "Content-Type": "application/json"
-                },
-                timeout=httpx.Timeout(
-                    connect=10.0,
-                    read=150.0,
-                    write=10.0,
-                    pool=10.0
-                )
-            )
-            response.raise_for_status()
-            return response.json()
-    
-    except (httpx.RequestError, httpx.HTTPStatusError) as e:
-        print(f"API call error: {e}")
-        return None 
+    print("calling processing level and ingredient_analysis func")
+    raw_response = await get_claims_analysis(product_info_from_db)
+    return raw_response
   
 async def analyze_product(product_info_from_db):
     global assistant_p
