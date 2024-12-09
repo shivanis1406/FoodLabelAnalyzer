@@ -1,6 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 import json, os, httpx, asyncio
+import nest_asyncio
 import requests, time
 from typing import Dict, Any
 import pickle
@@ -526,6 +527,8 @@ async def main():
 
 # Create a wrapper function to run the async main
 def run_main():
+    # Apply nest_asyncio patch to allow nested event loops
+    nest_asyncio.apply()
     asyncio.run(main())
 
 # Call the wrapper function in Streamlit
