@@ -442,7 +442,8 @@ def main():
             
             # Process response
             response, status = ChatManager.process_response(user_input)
-
+            print(f"Response from process_response is {response}")
+            
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
                 st.markdown(response)
