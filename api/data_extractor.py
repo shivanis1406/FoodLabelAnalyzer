@@ -63,7 +63,7 @@ async def extract_data(image_links_json: Dict[str, List[str]]):
         extracted_data["_id"] = str(result.inserted_id)
         return extracted_data
     except Exception as e:
-        raise Exception(str(e))
+        raise Exception(f"An error occurred {e}") from e
 
 async def find_product(product_name: str):
 
@@ -89,7 +89,7 @@ async def find_product(product_name: str):
             "message": "Products found" if product_list else "No products found"
         }
     except Exception as e:
-        raise Exception(str(e))
+        raise Exception(f"An error occurred {e}") from e
 
 async def get_product(product_name: str):
     if not product_name:
@@ -103,4 +103,4 @@ async def get_product(product_name: str):
         product["_id"] = str(product["_id"])
         return product
     except Exception as e:
-        raise Exception(str(e))
+        raise Exception(f"An error occurred {e}") from e
