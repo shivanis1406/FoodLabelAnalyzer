@@ -122,7 +122,7 @@ The output must be in JSON format as follows:
     return claims_analysis_str
 
 def get_claims_analysis(product_info_from_db):
-        
+    
     if product_info_from_db:
         brand_name = product_info_from_db.get("brandName", "")
         product_name = product_info_from_db.get("productName", "")
