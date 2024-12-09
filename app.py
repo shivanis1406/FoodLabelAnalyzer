@@ -76,8 +76,9 @@ async def get_product_list(product_name_by_user):
     return raw_response
 
 async def get_product_info(product_name):
-    product = await get_product(product_name)
-    return product
+    print(f"getting product info from mongodb for {product_name}")
+    product_info = await get_product(product_name)
+    return product_info
 
 # Define a sample request body that matches NutrientAnalysisRequest
 class NutrientAnalysisRequest(BaseModel):
