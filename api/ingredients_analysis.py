@@ -3,8 +3,6 @@ import sys, pickle
 from functools import wraps
 import os
 import json
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Any
 from sentence_transformers import SentenceTransformer, util
 import torch
@@ -394,13 +392,7 @@ async def async_process_ingredients(ingredients_list, client, embeddings_titles_
     
     return refs, all_ingredient_analysis
     
-# Define the request body using a simple BaseModel (without complex pydantic models if not needed)
-#class IngredientAnalysisRequest(BaseModel):
-#    product_info_from_db: dict,
-    
-@app.post("/api/processing_level-ingredient-analysis")
-async def get_ingredient_analysis(request: Request):
-    payload = await request.json()
+async def get_ingredient_analysis(payload):
     print(f"DEBUG - payload obtained {payload}")
     product_info_from_db = payload.get('product_info_from_db')
     assistant_p_id = payload.get('assistant_p_id')
