@@ -69,7 +69,6 @@ async def extract_data(image_links_json: Dict[str, List[str]]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/find-product")
 async def find_product(product_name: str):
     if not product_name:
         raise HTTPException(status_code=400, detail="Please provide a valid product name")
@@ -81,7 +80,10 @@ async def find_product(product_name: str):
         
         for term in search_terms:
             query = {"productName": {"$regex": f".*{re.escape(term)}.*", "$options": "i"}}
-            async for product in collection.find(query):
+            # Use .to_list() to fetch all results
+            products = await collection.find(query).to_list(length=None)
+            #async for product in collection.find(query):
+            for product in products:
                 brand_product_name = f"{product['productName']} by {product['brandName']}"
                 product_list.add(brand_product_name)
         
