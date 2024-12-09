@@ -363,9 +363,9 @@ class ChatManager:
             st.session_state.awaiting_selection = True
             return "Here are some similar products from our database. Please select:", "no success"
 
-        st.session_state.messages.append({"role": "assistant", "content": "Please provide the images of the product."})
+        st.session_state.messages.append({"role": "assistant", "content": f"Please provide images of the product since {len(similar_products)} similar products found in our database"})
         with st.chat_message("assistant"):
-            st.markdown("Please provide the images of the product.")
+            st.markdown(f"Please provide images of the product since {len(similar_products)} similar products found in our database")
         # Add a file uploader to allow users to upload multiple images
         uploaded_files = st.file_uploader(
                 "Upload product images here:",
@@ -377,8 +377,7 @@ class ChatManager:
             st.session_state.uploaded_files = uploaded_files
             return f"{len(uploaded_files)} images uploaded for analysis.", "no success"
                         
-        #return "Product not found in our database. Please provide images of the product.", "no success"
-        return "Please provide images of the product.", "no success"
+        return "Waiting for images!", "no success"
 
     @staticmethod
     def _handle_product_url():
