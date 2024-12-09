@@ -94,45 +94,8 @@ async def generate_final_analysis(
     refs: list
 ):
     print(f"Calling cumulative-analysis API with refs : {refs}")
-    global render_host_url
-    # Create a client with a longer timeout (120 seconds)
-    async with httpx.AsyncClient() as client_api:
-        try:
-            # Convert the refs list to a JSON string
-            print(f"sending refs to API for product {product_name} by {brand_name} - {refs}")
-            
-            response = await client_api.post(
-                f"{render_host_url}/cumulative_analysis/api/cumulative-analysis",
-                json={
-                    "brand_name": brand_name,
-                    "product_name": product_name,
-                    "nutritional_level": nutritional_level,
-                    "processing_level": processing_level,
-                    "all_ingredient_analysis": all_ingredient_analysis,
-                    "claims_analysis": claims_analysis,
-                    "refs": refs
-                },
-                headers={
-                    "Content-Type": "application/json"
-                },
-                timeout=httpx.Timeout(
-                    connect=10.0,
-                    read=800.0,
-                    write=10.0,
-                    pool=10.0
-                )
-            )
-            response.raise_for_status()
-            formatted_response = response.text.replace('\\n', '\n')
-            return formatted_response
-            
-        except httpx.TimeoutException as e:
-            print(f"Request timed out: {e}")
-            return None
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return None
-
+    raw_response = await generate_final_analysis({'brand_name': brand_name, 'product_name': product_name, 'nutritional_level': nutritional_level, 'processing_level': processing_level, 'all_ingredient_analysis': all_ingredient_analysis, 'claims_analysis': claims_analysis, 'refs': refs})
+    return raw_response
 
 async def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id):
     print("calling processing level and ingredient_analysis func")
