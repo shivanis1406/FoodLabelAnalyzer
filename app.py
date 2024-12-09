@@ -112,7 +112,7 @@ async def analyze_processing_level_and_ingredients(product_info_from_db, assista
     return raw_response
 
 def analyze_claims_list(product_info_from_db):
-    print("calling processing level and ingredient_analysis func")
+    print("calling claims analysis func")
     raw_response = get_claims_analysis(product_info_from_db)
     return raw_response
   
