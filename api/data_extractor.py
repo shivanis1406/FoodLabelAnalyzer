@@ -21,10 +21,27 @@ collection = db.products
 print(f"collection is {collection}")
 
 
-def extract_information(image_links: List[str]) -> Dict[str, Any]:
+def extract_information(images_list: List[Any]) -> Dict[str, Any]:
     global openai_client
     print(f"DEBUG - openai_client : {openai_client}")
+
+    valid_image_files = images_list
+
+    #for uploaded_file in images_list:
+    #    try:
+    #        # Open the uploaded file as an image
+    #        image = Image.open(uploaded_file)
     
+    #        # Check image quality (assuming `check_image_quality` accepts PIL images)
+    #        quality_result = check_image_quality(image, blur_threshold)
+    #        if bool(quality_result['can_ocr']):
+    #            # Image is readable, add to valid list
+    #            valid_image_files.append(uploaded_file)
+    #        else:
+    #            return {"Error" : "One of the images is blurry, please re-upload"}
+    #    except Exception as e:
+    #        print(f"DEBUG - Error processing image {uploaded_file.name}: {str(e)}")
+    #        continue
     LABEL_READER_PROMPT = """
 You will be provided with a set of images corresponding to a single product. These images are found printed on the packaging of the product.
 Your goal will be to extract information from these images to populate the schema provided. Here is some information you will routinely encounter. Ensure that you capture complete information, especially for nutritional information and ingredients:
@@ -36,8 +53,16 @@ Your goal will be to extract information from these images to populate the schem
 - Brand/Manufactured By: Extract the parent company of this product.
 - Serving size: This might be explicitly stated or inferred from the nutrients per serving.
 """
-    try:
-        image_message = [{"type": "image_url", "image_url": {"url": il}} for il in image_links]
+    try:    
+        #image_message = [{"type": "image_url", "image_url": {"url": il}} for il in image_links]
+        # Convert valid images to byte streams for API processing
+        image_message = [
+            {
+                "type": "image",
+                "image": {"bytes": io.BytesIO(uploaded_file.read()).getvalue()}
+            }
+            for uploaded_file in valid_image_files
+        ]
         response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -55,12 +80,12 @@ Your goal will be to extract information from these images to populate the schem
     except Exception as e:
         raise Exception(f"Error extracting information: {str(e)}")
 
-def extract_data(image_links_json: Dict[str, List[str]]):
-    if not image_links_json or "image_links" not in image_links_json:
+def extract_data(images_list_json: Dict[str, List[Any]]):
+    if not images_list_json or "images_list" not in images_list_json:
         raise Exception("Image links not found")
     
     try:
-        extracted_data = extract_information(image_links_json["image_links"])
+        extracted_data = extract_information(images_list_json["images_list"])
         result = collection.insert_one(extracted_data)
         extracted_data["_id"] = str(result.inserted_id)
         return extracted_data
