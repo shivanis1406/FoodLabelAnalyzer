@@ -11,6 +11,7 @@ from api.nutrient_analyzer import get_nutrient_analysis
 from api.data_extractor import extract_data, find_product, get_product
 from api.ingredients_analysis import get_ingredient_analysis
 from api.claims_analysis import get_claims_analysis
+from api.cumulative_analysis import generate_final_analysis
 #Used the @st.cache_resource decorator on this function. 
 #This Streamlit decorator ensures that the function is only executed once and its result (the OpenAI client) is cached. 
 #Subsequent calls to this function will return the cached client, avoiding unnecessary recreation.
@@ -84,7 +85,7 @@ async def analyze_nutrition_using_icmr_rda(product_info_from_db):
     raw_response = await get_nutrient_analysis(NutrientAnalysisRequest(product_info_from_db=product_info_from_db))
     return raw_response
 
-async def generate_final_analysis(
+def generate_cumulative_analysis(
     brand_name: str,
     product_name: str,
     nutritional_level: str,
@@ -94,7 +95,7 @@ async def generate_final_analysis(
     refs: list
 ):
     print(f"Calling cumulative-analysis API with refs : {refs}")
-    raw_response = await generate_final_analysis({'brand_name': brand_name, 'product_name': product_name, 'nutritional_level': nutritional_level, 'processing_level': processing_level, 'all_ingredient_analysis': all_ingredient_analysis, 'claims_analysis': claims_analysis, 'refs': refs})
+    raw_response = generate_final_analysis({'brand_name': brand_name, 'product_name': product_name, 'nutritional_level': nutritional_level, 'processing_level': processing_level, 'all_ingredient_analysis': all_ingredient_analysis, 'claims_analysis': claims_analysis, 'refs': refs})
     return raw_response
 
 async def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id):
@@ -159,7 +160,7 @@ async def analyze_product(product_info_from_db):
         claims_analysis = claims_analysis_json["claims_analysis"] if claims_analysis_json else ""
 
         # Generate final analysis
-        final_analysis = await generate_final_analysis(
+        final_analysis = generate_final_analysis(
             brand_name, 
             product_name, 
             nutritional_level, 
