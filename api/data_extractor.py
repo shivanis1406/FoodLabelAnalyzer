@@ -101,6 +101,7 @@ async def get_product(product_name: str):
             raise Exception("Product not found")
         
         product["_id"] = str(product["_id"])
+        print(f"product info : {product}")
         return product
     except Exception as e:
         raise Exception(f"An error occurred {e}") from e
