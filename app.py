@@ -4,7 +4,7 @@ import json, os, httpx, asyncio
 import requests, time
 from typing import Dict, Any
 import pickle
-from calc_consumption_context import get_consumption_context
+from app.calc_consumption_context import get_consumption_context
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 from pydantic import BaseModel  # Import BaseModel for creating request body
