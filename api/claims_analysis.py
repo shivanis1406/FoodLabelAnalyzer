@@ -121,13 +121,7 @@ The output must be in JSON format as follows:
     
     return claims_analysis_str
 
-# Define the request body using a simple BaseModel (without complex pydantic models if not needed)
-class ClaimsAnalysisRequest(BaseModel):
-    product_info_from_db: dict
-    
-@app.post("/api/claims-analysis")
-def get_claims_analysis(request: ClaimsAnalysisRequest):
-    product_info_from_db = request.product_info_from_db
+def get_claims_analysis(product_info_from_db):
         
     if product_info_from_db:
         brand_name = product_info_from_db.get("brandName", "")
