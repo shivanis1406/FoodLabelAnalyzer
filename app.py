@@ -324,9 +324,9 @@ class ProductSelector:
                     
                         if uploaded_files:
                             st.session_state.messages.append(
-                                {"role": "user", "content": f"{len(uploaded_files)} images uploaded for analysis."}
+                                {"role": "assistant", "content": f"{len(uploaded_files)} images uploaded for analysis."}
                             )
-                            with st.chat_message("user"):
+                            with st.chat_message("assistant"):
                                 st.markdown(f"{len(uploaded_files)} images uploaded for analysis.")
                             st.session_state.uploaded_files = uploaded_files
                             st.rerun()
@@ -344,6 +344,7 @@ class ChatManager:
             #if "http:/" not in user_input and "https:/" not in user_input:
             if len(st.session_state.uploaded_files) == 0:
                 response, status = ChatManager._handle_product_name(user_input)
+                print(f"Response from handle_product_name is {response}")
                 if "Please provide images of the product" in response:
                     # Add a file uploader to allow users to upload multiple images
                     uploaded_files = st.file_uploader(
@@ -353,12 +354,8 @@ class ChatManager:
                         )
                     
                     if uploaded_files:
-                        st.session_state.messages.append(
-                            {"role": "user", "content": f"{len(uploaded_files)} images uploaded for analysis."}
-                        )
-                        with st.chat_message("user"):
-                            st.markdown(f"{len(uploaded_files)} images uploaded for analysis.")
                         st.session_state.uploaded_files = uploaded_files
+                        response = f"{len(uploaded_files)} images uploaded for analysis."
             else:
                 response, status = ChatManager._handle_product_url()
                 
