@@ -68,16 +68,16 @@ def create_assistant_and_embeddings():
 assistant_p = create_assistant_and_embeddings()
 
 def extract_data_from_product_image(image_links):
-    raw_response = asyncio.run(extract_data({"image_links" : image_links}))
+    raw_response = extract_data({"image_links" : image_links})
     return raw_response 
             
 def get_product_list(product_name_by_user):
-    raw_response = asyncio.run(find_product(product_name_by_user))
+    raw_response = find_product(product_name_by_user)
     return raw_response
 
 def get_product_info(product_name):
     print(f"getting product info from mongodb for {product_name}")
-    product_info = asyncio.run(get_product(product_name))
+    product_info = get_product(product_name)
     return product_info
 
 # Define a sample request body that matches NutrientAnalysisRequest
