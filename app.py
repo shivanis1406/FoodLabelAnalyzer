@@ -363,6 +363,9 @@ class ChatManager:
             st.session_state.awaiting_selection = True
             return "Here are some similar products from our database. Please select:", "no success"
 
+        st.session_state.messages.append({"role": "assistant", "content": "Please provide the images of the product."})
+        with st.chat_message("assistant"):
+            st.markdown("Please provide the images of the product.")
         # Add a file uploader to allow users to upload multiple images
         uploaded_files = st.file_uploader(
                 "Upload product images here:",
