@@ -18,12 +18,6 @@ def get_openai_client():
     #Enable debug mode for testing only
     return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
-#@st.cache_resource
-#def get_backend_urls():
-#    data_extractor_url = "https://data-extractor-67qj89pa0-sonikas-projects-9936eaad.vercel.app/"
-#    return data_extractor_url
-
 client = get_openai_client()
 
 @st.cache_resource
@@ -138,42 +132,17 @@ async def generate_final_analysis(
             return None
 
 
-async def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id, start_time):
-    print("calling processing level and ingredient_analysis api")
+async def analyze_processing_level_and_ingredients(product_info_from_db, assistant_p_id):
+    print("calling processing level and ingredient_analysis func")
     print(f"assistant_p_id is of type {type(assistant_p_id)}")
 
-    global render_host_url
     request_payload = {
         "product_info_from_db": product_info_from_db,
         "assistant_p_id": assistant_p_id
     }
     
-    try:
-        #with httpx.Client() as client_api
-        print(f"DEBUG - Inside Ingredient analysis API 1 {time.time() - start_time} sec")
-        async with httpx.AsyncClient() as client_api:
-            response = await client_api.post(
-                f"{render_host_url}/ingredient_analysis/api/processing_level-ingredient-analysis", 
-                json=request_payload,
-                headers={
-                    "Content-Type": "application/json"
-                },
-                timeout=httpx.Timeout(
-                    connect=5.0,
-                    read=600.0,
-                    write=10.0,
-                    pool=10.0
-                )
-            )
-            print(f"DEBUG - Inside Ingredient analysis API 2 {time.time() - start_time} sec")
-            response.raise_for_status()
-            return response.json()
-    except httpx.TimeoutException as e:
-            print(f"The request timed out : {e}")
-            return None
-    except (httpx.RequestError, httpx.HTTPStatusError) as e:
-            print(f"API call error: {e}")
-            return None
+    raw_response = await get_ingredient_analysis(request_payload)
+    return raw_response
 
 async def analyze_claims(product_info_from_db):
     print("calling processing level and ingredient_analysis api")
@@ -217,7 +186,7 @@ async def analyze_product(product_info_from_db):
         
         # Ensure each function is an async function and returns a coroutine
         nutrition_coro = analyze_nutrition_using_icmr_rda(product_info_from_db)
-        processing_coro = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id, start_time)
+        processing_coro = analyze_processing_level_and_ingredients(product_info_from_db, assistant_p.id)
         
         coroutines.append(nutrition_coro)
         coroutines.append(processing_coro)
