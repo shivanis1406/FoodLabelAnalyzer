@@ -1,6 +1,8 @@
 # api/index.py
-from motor.motor_asyncio import AsyncIOMotorClient
-from openai import AsyncOpenAI
+#from motor.motor_asyncio import AsyncIOMotorClient
+#from openai import AsyncOpenAI
+from pymongo import MongoClient
+from openai import OpenAI
 import os
 import json
 import re
@@ -11,15 +13,15 @@ from .config import MONGODB_URL, OPENAI_API_KEY
 from .schemas import label_reader_schema
 
 # Initialize clients
-openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
 print(f"MONGODB_URL is {MONGODB_URL}")
-mongodb_client = AsyncIOMotorClient(MONGODB_URL)
+mongodb_client = MongoClient(MONGODB_URL)
 db = mongodb_client.consumeWise
 collection = db.products
 print(f"collection is {collection}")
 
 
-async def extract_information(image_links: List[str]) -> Dict[str, Any]:
+def extract_information(image_links: List[str]) -> Dict[str, Any]:
     global openai_client
     print(f"DEBUG - openai_client : {openai_client}")
     
@@ -36,7 +38,7 @@ Your goal will be to extract information from these images to populate the schem
 """
     try:
         image_message = [{"type": "image_url", "image_url": {"url": il}} for il in image_links]
-        response = await openai_client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
@@ -53,19 +55,19 @@ Your goal will be to extract information from these images to populate the schem
     except Exception as e:
         raise Exception(f"Error extracting information: {str(e)}")
 
-async def extract_data(image_links_json: Dict[str, List[str]]):
+def extract_data(image_links_json: Dict[str, List[str]]):
     if not image_links_json or "image_links" not in image_links_json:
         raise Exception("Image links not found")
     
     try:
-        extracted_data = await extract_information(image_links_json["image_links"])
-        result = await collection.insert_one(extracted_data)
+        extracted_data = extract_information(image_links_json["image_links"])
+        result = collection.insert_one(extracted_data)
         extracted_data["_id"] = str(result.inserted_id)
         return extracted_data
     except Exception as e:
         raise Exception(f"An error occurred {e}") from e
 
-async def find_product(product_name: str):
+def find_product(product_name: str):
 
     if not product_name:
         raise Exception("Please provide a valid product name")
@@ -78,7 +80,7 @@ async def find_product(product_name: str):
         for term in search_terms:
             query = {"productName": {"$regex": f".*{re.escape(term)}.*", "$options": "i"}}
             # Use .to_list() to fetch all results
-            products = await collection.find(query).to_list(length=None)
+            products = collection.find(query).to_list(length=None)
             #async for product in collection.find(query)
             for product in products:
                 brand_product_name = f"{product['productName']} by {product['brandName']}"
@@ -91,12 +93,12 @@ async def find_product(product_name: str):
     except Exception as e:
         raise Exception(f"An error occurred {e}") from e
 
-async def get_product(product_name: str):
+def get_product(product_name: str):
     if not product_name:
         raise Exception("Please provide a valid product name")
     
     try:
-        product = await collection.find_one({"productName": product_name})
+        product = collection.find_one({"productName": product_name})
         if not product:
             raise Exception("Product not found")
         
