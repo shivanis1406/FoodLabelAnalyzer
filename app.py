@@ -344,18 +344,6 @@ class ChatManager:
             #if "http:/" not in user_input and "https:/" not in user_input:
             if len(st.session_state.uploaded_files) == 0:
                 response, status = ChatManager._handle_product_name(user_input)
-                print(f"Response from handle_product_name is {response}")
-                if "Please provide images of the product" in response:
-                    # Add a file uploader to allow users to upload multiple images
-                    uploaded_files = st.file_uploader(
-                            "Upload product images here:",
-                            type=["jpg", "jpeg", "png"],
-                            accept_multiple_files=True
-                        )
-                    
-                    if uploaded_files:
-                        st.session_state.uploaded_files = uploaded_files
-                        response = f"{len(uploaded_files)} images uploaded for analysis."
             else:
                 response, status = ChatManager._handle_product_url()
                 
@@ -374,7 +362,18 @@ class ChatManager:
             st.session_state.similar_products = similar_products
             st.session_state.awaiting_selection = True
             return "Here are some similar products from our database. Please select:", "no success"
-            
+
+        # Add a file uploader to allow users to upload multiple images
+        uploaded_files = st.file_uploader(
+                "Upload product images here:",
+                type=["jpg", "jpeg", "png"],
+                accept_multiple_files=True
+            )
+                    
+        if uploaded_files:
+            st.session_state.uploaded_files = uploaded_files
+            return f"{len(uploaded_files)} images uploaded for analysis.", "no success"
+                        
         return "Product not found in our database. Please provide images of the product.", "no success"
 
     @staticmethod
@@ -442,7 +441,6 @@ def main():
             
             # Process response
             response, status = ChatManager.process_response(user_input)
-            print(f"Response from process_response is {response}")
             
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
