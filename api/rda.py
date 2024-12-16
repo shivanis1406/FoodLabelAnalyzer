@@ -1,8 +1,8 @@
 import math, json, os
-from openai import AsyncOpenAI
+from openai import OpenAI
 from typing import Dict, Any
 
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Function to scale nutrition values
 def scale_nutrition(nutrition_per_serving, user_serving_size):
     scaling_factor = user_serving_size / nutrition_per_serving['servingSize']
